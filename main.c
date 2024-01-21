@@ -1,11 +1,14 @@
+/* Copyright 2024 Isaac McCracken - All rights reserved
+*/
+
 #include <stdio.h>
 #include <time.h>
 
 #define THINKING_TIME 10
 #define BOARD_WIDTH 8
 
-typedef unsigned long long U64;
-typedef unsigned char U8;
+# include "types.h"
+
 
 typedef union Board Board;
 union Board {
@@ -65,12 +68,16 @@ struct StateNode {
 
 
 
-
+/**
+ * @brief This is a debug print for printing the bit board
+ * 
+ * @param board 
+ */
 void PrintBitBoard(Board board) {
   for (U8 i = 0; i < 8; i++) {
     for (U8 j = 0; j < 8; j++) {
       char c = (board.rows[i] & (1<<j)) > 0;
-      putchar('0' + c);
+      putchar('0' + c); // prints zero or 1
       putchar(' ');
     }
     putchar('\n');
