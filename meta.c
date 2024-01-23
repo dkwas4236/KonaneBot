@@ -53,7 +53,7 @@ int main() {
       0 0 0 0 0 0 0 0 
       0 0 0 0 0 0 0 0 
     then our moves would be possible moves:
-      0 0 0 0 0 0 0 0 
+      0 0 0 0 0 0 0 0  
       0 0 0 0 x 0 0 0 
       0 0 0 0 0 0 0 0 
       x 0 x 0 - 0 x 0 
@@ -67,7 +67,20 @@ int main() {
   for (char i = 0; i < 64; i++) {
     unsigned long long result = 0;
     char grid[64] = { 0 };
+    Coord coord = CoordFromIndex(i);
 
+    // right
+    for (char x = coord.x; x < 8; x += 2)
+      grid[IndexFromCoord((Coord){x, coord.y})] = 1;
+    // left
+    for (char x = coord.x; x >= 0; x -= 2)
+      grid[IndexFromCoord((Coord){x, coord.y})] = 1;
+    // up 
+    for (char y = coord.y; y >= 0; y -= 2)
+      grid[IndexFromCoord((Coord){coord.x, y})] = 1;
+    for (char y = coord.y; y >= 0; y -= 2)
+      grid[IndexFromCoord((Coord){coord.x, y})] = 1;
+    
 
     fprintf(fp, "  0x%xllu", 69);
 
