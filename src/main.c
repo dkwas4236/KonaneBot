@@ -138,11 +138,11 @@ int main(void) {
   int player_types[2] = {Agent_player, Agent_player};
   int board[BOARD_WIDTH * BOARD_WIDTH] = { 0 };
 
-  Board test = (Board){.whole = bitMoves[0]};
+  Board test = (Board){.whole = bitMoves[0][3]};
 
   Board whiteBoard = (Board){.whole = 0xaa55aa55aa55aa55};
   Board blackBoard = (Board){.whole = 0x55aa55aa55aa55aa};
-  // PrintBitBoard(whiteBoard);
+  PrintBitBoard(whiteBoard);
   PrintBitBoard(test);
   putchar('\n');
 

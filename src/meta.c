@@ -7,6 +7,10 @@
 
   COPYRIGHT:
     Copyright 2024 Isaac McCracken - All rights reserved
+
+
+  NOTE: If you work on this file please add your copyright above and in the
+  generated file
 */
 
 
@@ -51,7 +55,12 @@ int main() {
 
   fprintf(fp, "#include \"types.h\"\n\n");
 
+
+  fprintf(fp, "#define allBlack 0xaa55aa55aa55aa55llu // The starting condition of the black pieces\n");
+  fprintf(fp, "#define allWhite 0x55aa55aa55aa55aallu // The starting condition of the white pieces\n\n");
+
   fprintf(fp, "extern const U64 bitMoves[4][64];\n\n");
+
 
   fprintf(fp, "#if defined(BITMOVES_IMPLEMENTATION)\n\n");
 
