@@ -13,4 +13,12 @@ typedef signed int        I32;
 typedef signed long long  I64;
 
 
+enum {
+  Direction_right,
+  Direction_left,
+  Direction_up,
+  Direction_down,
+};
+
+
 #endif

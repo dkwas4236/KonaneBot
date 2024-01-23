@@ -7,7 +7,9 @@
 #define THINKING_TIME 10
 #define BOARD_WIDTH 8
 
-# include "types.h"
+#include "types.h"
+#define BITMOVES_IMPLEMENTATION
+#include "bitmoves.h"
 
 
 typedef union Board Board;
@@ -136,13 +138,12 @@ int main(void) {
   int player_types[2] = {Agent_player, Agent_player};
   int board[BOARD_WIDTH * BOARD_WIDTH] = { 0 };
 
-
-  Board bitMoves[64];
-  GenerateBitMoves(bitMoves);
+  Board test = (Board){.whole = bitMoves[0]};
 
   Board whiteBoard = (Board){.whole = 0xaa55aa55aa55aa55};
   Board blackBoard = (Board){.whole = 0x55aa55aa55aa55aa};
-  PrintBitBoard(whiteBoard);
+  // PrintBitBoard(whiteBoard);
+  PrintBitBoard(test);
   putchar('\n');
 
   
