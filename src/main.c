@@ -12,11 +12,6 @@
 #include "bitmoves.h"
 
 
-typedef union Board Board;
-union Board {
-  U64 whole;
-  U8 rows[8];
-};
 
 enum {
   Turn_black,
@@ -29,11 +24,7 @@ enum {
   Agent_ai,
 };
 
-enum {
-  Board_empty,
-  Board_black,
-  Board_white,
-};
+
 
 /*
   Breadth first search
@@ -49,23 +40,28 @@ struct Coord {
   U8 y;
 };
 
-Coord IndexToCoord(U8 index) {
+inline Coord IndexToCoord(U8 index) {
   return (Coord){.x = index % 8, .y = index / 8};
 }
 
-U8 CoordToIndex(U8 index) {
-
+inline U8 CoordToIndex(Coord coord) {
+  return coord.x + coord.y * 8;
 }
 
 
+// 64 byte per node maybe we can cut down on size
 typedef struct StateNode StateNode;
 struct StateNode {
   U64 white; // bit will be one if there is a square there
   U64 black; // bit will be one if there is a square there
   StateNode *parent;
+  StateNode *next;
+  StateNode *prev;
+  StateNode *firstChild;
+  StateNode *lastChild;
   U64 childCount;
-
 };
+
 
 
 

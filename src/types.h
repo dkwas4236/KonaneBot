@@ -21,4 +21,42 @@ enum {
 };
 
 
+typedef union Board Board;
+union Board {
+  U8 row[8];
+  U64 whole;
+};
+
+// 64 byte per node maybe we can cut down on size
+typedef struct StateNode StateNode;
+struct StateNode {
+  Board white; // bit will be one if there is a square there
+  Board black; // bit will be one if there is a square there
+  StateNode *parent;
+  StateNode *next;
+  StateNode *prev;
+  StateNode *firstChild;
+  StateNode *lastChild;
+  U64 childCount;
+};
+
+
+
+typedef struct Coord Coord;
+struct Coord {
+  U8 x;
+  U8 y;
+};
+
+
+inline Coord IndexToCoord(U8 index) {
+  return (Coord){.x = index % 8, .y = index / 8};
+}
+
+inline U8 CoordToIndex(Coord coord) {
+  return coord.x + coord.y * 8;
+}
+
+
+
 #endif
