@@ -10,59 +10,7 @@
 #include "types.h"
 #define BITMOVES_IMPLEMENTATION
 #include "bitmoves.h"
-
-
-
-enum {
-  Turn_black,
-  Turn_white,
-}; 
-
-
-enum {
-  Agent_player,
-  Agent_ai,
-};
-
-
-
-/*
-  Breadth first search
-    Implementation
-    - fringe FIFO - new successors go at end
-    - when we go to new node we add all 
-
-*/
-
-typedef struct Coord Coord;
-struct Coord {
-  U8 x;
-  U8 y;
-};
-
-inline Coord IndexToCoord(U8 index) {
-  return (Coord){.x = index % 8, .y = index / 8};
-}
-
-inline U8 CoordToIndex(Coord coord) {
-  return coord.x + coord.y * 8;
-}
-
-
-// 64 byte per node maybe we can cut down on size
-typedef struct StateNode StateNode;
-struct StateNode {
-  U64 white; // bit will be one if there is a square there
-  U64 black; // bit will be one if there is a square there
-  StateNode *parent;
-  StateNode *next;
-  StateNode *prev;
-  StateNode *firstChild;
-  StateNode *lastChild;
-  U64 childCount;
-};
-
-
+#include "arena.h"
 
 
 
@@ -71,7 +19,7 @@ struct StateNode {
  * 
  * @param board 
  */
-void PrintBitBoard(Board board) {
+void PrintBitBoard(BitBoard board) {
   for (U8 i = 0; i < 8; i++) {
     for (U8 j = 0; j < 8; j++) {
       char c = (board.rows[i] & (1<<j)) > 0;
@@ -79,70 +27,91 @@ void PrintBitBoard(Board board) {
       putchar(' ');
     }
     putchar('\n');
-    
+  }
+}
+
+void PrintBoard(BitBoard board) {
+  for (U8 i = 0; i < 8; i++) {
+    for (U8 j = 0; j < 8; j++) {
+      U8 color = (i + j) % 2 ;
+      char c = (board.rows[i] & (1<<j)) > 0;
+      if (c) c = (color)? 'W': 'B';
+      else c = 'O';
+      putchar(c);
+    }
+    putchar('\n');
+  }
+}
+
+void StateNodePushChild(Arena *arena, StateNode *parent, StateNode *child) {
+  if (parent->lastChild) {
+    MyAssert(parent->firstChild);
+    // link parent to new child
+    StateNode *oldLast = parent->lastChild;
+    parent->lastChild = child;
+    // link children to each other
+    child->prev = oldLast;
+    oldLast->next = child;
+    // increase child count (child count could be useless)
+    parent->childCount++;
+  } else {
+    parent->firstChild = child;
+    parent->lastChild = child;
+    parent->childCount = 1;
+  }
+}
+
+
+
+
+StateNode *GenerateAllMoves(Arena *arena, BitBoard board, U64 turn) {
+  if (turn == 0) {
+    MyAssert(board.whole == allPieces);
+    StateNode *node = ArenaPush(arena, sizeof(StateNode));
+    node->board = board;
+    node->board.whole &= ~1llu;
+    return node;
+  }
+
+  // for each of our pieces
+  for (U8 index = 0; index < 32; index++) {
+    U64 pieceMask = 1llu << index;
+    U64 moveMask = 0llu;
+    U64 killMask = 0llu;
+
+    // shift one over if its whites turn or multiplu by 2... 8=====D~~~~~**
+    if (turn % 2) pieceMask << 1;  
+
+    // skip if we do not have a piece there
+    if (!(pieceMask & board.whole)) continue;
+
+    // for each of the four directions we can move for that piece
+
+
   }
   
 }
 
 
 
-void GenerateBitMoves(Board *bitMoves) {
-  U8 boardArray[8][8] = {0};
-  for (U8 i = 0; i < 64; i++) {
-    U8 x = i % 8;
-    U8 y = i / 8;
-
-  }
-}
-
-
-typedef struct AgentMove AgentMove;
-struct AgentMove {
-  Coord start;
-  Coord end;
-};
-
-void PrintBoard(int *board, int width) {
-  for (int i = 0; i < width * width; i++) {
-
-    if (i % width == 0) {
-      putchar('A' + (i / width));
-      putchar(' ');
-    } 
-
-
-    char c = 'O';
-    if (board[i] == Board_black) c = 'B';
-    if (board[i] == Board_white) c = 'W';
-
-    putchar(c);
-    putchar(' ');
-
-    if ((i + 1) % width == 0) putchar('\n');
-  }
-
-  printf("  ");
-  for (int i = 0; i < width; i++) {putchar('1' + i); putchar(' ');}
-  
-  
-  
-}
 
 
 
 int main(void) {
-  int player_types[2] = {Agent_player, Agent_player};
-  int board[BOARD_WIDTH * BOARD_WIDTH] = { 0 };
+  Arena *arena = ArenaInit(Gigabyte(4)); // Don't worry this won't actually allocate 4 gigabytes
 
-  Board test = (Board){.whole = bitMoves[0][3]};
+  BitBoard board = {.whole = allPieces};
 
-  Board whiteBoard = (Board){.whole = 0xaa55aa55aa55aa55};
-  Board blackBoard = (Board){.whole = 0x55aa55aa55aa55aa};
-  PrintBitBoard(whiteBoard);
-  PrintBitBoard(test);
-  putchar('\n');
+  PrintBoard(board);
 
+  StateNode *nodes = GenerateAllMoves(arena, board, 0);
+
+  printf("Now This\n");
+  PrintBoard(nodes->board);
   
 
+
+  // deinitalization
+  ArenaDeinit(arena);
   return 0;
 }

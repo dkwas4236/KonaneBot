@@ -17,18 +17,7 @@
 #include <stdio.h> 
 #include "types.h"
 
-typedef struct Coord {
-  I8 x;
-  I8 y;
-} Coord;
 
-I8 IndexFromCoord(Coord coord) {
-  return coord.x + coord.y * 8;
-}
-
-Coord CoordFromIndex(I8 index) {
-  return (Coord){index % 8, index / 8};
-}
 
 // this is a program that will generate a static array of all the possible konane 
 // moves.

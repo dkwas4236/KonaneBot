@@ -18,6 +18,18 @@ Arena *ArenaInit(U64 capacity) {
   return arena;
 }
 
+void ArenaDeinit(Arena *arena) {
+  Arena *node = arena;
+  while (node) {
+    Arena *next = node->next;
+
+    free(node);
+
+    node = next;
+  }
+  
+}
+
 
 void *ArenaPushNoZero(Arena *arena, U64 size) {
   while (arena->pos + size > arena->cap) {
@@ -46,7 +58,15 @@ void *ArenaPush(Arena *arena, U64 size) {
 
 
 void ArenaReset(Arena *arena) {
-  arena->pos = 0;
+  Arena *node = arena;
+  while (node) {
+    Arena const *next = node->next;
+
+    node->pos = 0;
+
+    node = next;
+  }
+  
 }
 
 

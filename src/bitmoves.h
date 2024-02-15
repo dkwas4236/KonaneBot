@@ -14,8 +14,9 @@
 
 #include "types.h"
 
-#define allBlack 0xaa55aa55aa55aa55llu // The starting condition of the black pieces
-#define allWhite 0x55aa55aa55aa55aallu // The starting condition of the white pieces
+#define allBlack  0xaa55aa55aa55aa55llu // The starting condition of the black pieces
+#define allWhite  0x55aa55aa55aa55aallu // The starting condition of the white pieces
+#define allPieces 0xFFFFFFFFFFFFFFFFllu // The whole
 
 extern const U64 bitMoves[4][64];
 

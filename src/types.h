@@ -12,6 +12,9 @@ typedef signed short      I16;
 typedef signed int        I32;
 typedef signed long long  I64;
 
+#define ROOT2 1.41421356237f // for monte carlo tree search
+
+#define MyAssert(expr) if (!expr) *((U32*)0) = 0xDEAD
 
 enum {
   Direction_right,
@@ -21,18 +24,18 @@ enum {
 };
 
 
-typedef union Board Board;
-union Board {
-  U8 row[8];
+typedef union BitBoard BitBoard;
+union BitBoard {
+  U8 rows[8];
   U64 whole;
 };
+
+
 
 // 64 byte per node maybe we can cut down on size
 typedef struct StateNode StateNode;
 struct StateNode {
-  Board white; // bit will be one if there is a square there
-  Board black; // bit will be one if there is a square there
-  StateNode *parent;
+  BitBoard   board;
   StateNode *next;
   StateNode *prev;
   StateNode *firstChild;
@@ -49,11 +52,11 @@ struct Coord {
 };
 
 
-inline Coord IndexToCoord(U8 index) {
+static inline Coord IndexToCoord(U8 index) {
   return (Coord){.x = index % 8, .y = index / 8};
 }
 
-inline U8 CoordToIndex(Coord coord) {
+static inline U8 CoordToIndex(Coord coord) {
   return coord.x + coord.y * 8;
 }
 
