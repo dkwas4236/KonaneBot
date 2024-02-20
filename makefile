@@ -1,7 +1,6 @@
 build:
-	gcc src/meta.c -o meta.exe 
-	./meta.exe
-	gcc src/main.c -o konane
+
+	gcc src/main.c src/arena.c -o konane.exe
 
 
 	

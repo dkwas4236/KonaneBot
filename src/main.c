@@ -1,4 +1,12 @@
 /* Copyright 2024 Isaac McCracken - All rights reserved
+ ......................................................
+ ......................................................
+
+ ......................................................
+ ......................................................
+
+ ......................................................
+ ......................................................
 */
 
 #include <stdio.h>
@@ -43,7 +51,7 @@ void PrintBoard(BitBoard board) {
   }
 }
 
-void StateNodePushChild(Arena *arena, StateNode *parent, StateNode *child) {
+void StateNodePushChild(StateNode *parent, StateNode *child) {
   if (parent->lastChild) {
     MyAssert(parent->firstChild);
     // link parent to new child
@@ -64,17 +72,20 @@ void StateNodePushChild(Arena *arena, StateNode *parent, StateNode *child) {
 
 
 
-StateNode *GenerateAllMoves(Arena *arena, BitBoard board, U64 turn) {
+void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
+  const BitBoard board = parent->board;
   if (turn == 0) {
     MyAssert(board.whole == allPieces);
     StateNode *node = ArenaPush(arena, sizeof(StateNode));
     node->board = board;
     node->board.whole &= ~1llu;
-    return node;
+    StateNodePushChild(parent, node);
+    return;
   }
 
   // for each of our pieces
   for (U8 index = 0; index < 32; index++) {
+    Coord coord = IndexToCoord(index);
     U64 pieceMask = 1llu << index;
     U64 moveMask = 0llu;
     U64 killMask = 0llu;
@@ -86,7 +97,9 @@ StateNode *GenerateAllMoves(Arena *arena, BitBoard board, U64 turn) {
     if (!(pieceMask & board.whole)) continue;
 
     // for each of the four directions we can move for that piece
+    for (U8 dir; dir < 4; dir++) {
 
+    }
 
   }
   
@@ -104,10 +117,11 @@ int main(void) {
 
   PrintBoard(board);
 
-  StateNode *nodes = GenerateAllMoves(arena, board, 0);
+  StateNode begining = {.board = board};
+  GenerateAllMoves(arena, &begining, 0);
 
   printf("Now This\n");
-  PrintBoard(nodes->board);
+  PrintBoard(begining.firstChild->board);
   
 
 
