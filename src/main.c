@@ -110,7 +110,15 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
 
 
 
-int main(void) {
+int main(int argc, char** argv) {
+
+  if (argc != 3) {
+    printf("Please run the program with the board file and the colour the agent will play\n");
+  }
+
+  char* boardFile = argv[1];
+  char agentPlayer = argv[2][0];
+
   Arena *arena = ArenaInit(Gigabyte(4)); // Don't worry this won't actually allocate 4 gigabytes
 
   BitBoard board = {.whole = allPieces};
