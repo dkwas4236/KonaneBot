@@ -8,3 +8,5 @@
     Copyright 2024 Isaac McCracken - All rights reserved
   
 */
+
+uint64_t* getBitBoard(char* fileName);
