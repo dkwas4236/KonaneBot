@@ -60,7 +60,7 @@ void *ArenaPush(Arena *arena, U64 size) {
 void ArenaReset(Arena *arena) {
   Arena *node = arena;
   while (node) {
-    Arena const *next = node->next;
+    Arena *next = node->next;
 
     node->pos = 0;
 

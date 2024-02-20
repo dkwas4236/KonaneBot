@@ -18,6 +18,7 @@
 #include "types.h"
 #define BITMOVES_IMPLEMENTATION
 #include "bitmoves.h"
+#include "boardio.h"
 #include "arena.h"
 
 
@@ -112,26 +113,16 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
 
 int main(int argc, char** argv) {
 
-  if (argc != 3) {
-    printf("Please run the program with the board file and the colour the agent will play\n");
-  }
-
-  char* boardFile = argv[1];
-  char agentPlayer = argv[2][0];
-
   Arena *arena = ArenaInit(Gigabyte(4)); // Don't worry this won't actually allocate 4 gigabytes
 
-  BitBoard board = {.whole = allPieces};
+  BitBoard board1 = BitBoardFromFile(arena, "boardstate1.txt");
+  BitBoard board2 = BitBoardFromFile(arena, "boardstate2.txt");
 
-  PrintBoard(board);
+  PrintBoard(board1);
+  printf("NOW THIS IS THE SECOND ONE\n");
+  PrintBoard(board2);
 
-  StateNode begining = {.board = board};
-  GenerateAllMoves(arena, &begining, 0);
-
-  printf("Now This\n");
-  PrintBoard(begining.firstChild->board);
   
-
 
   // deinitalization
   ArenaDeinit(arena);

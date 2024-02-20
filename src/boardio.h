@@ -9,4 +9,7 @@
   
 */
 
-uint64_t* getBitBoard(char* fileName);
+#include "types.h"
+#include "arena.h"
+
+BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName);

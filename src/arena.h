@@ -47,7 +47,7 @@ Arena *ArenaInit(U64 capacity); // Initalize a Arena with a certain an inital bu
 void ArenaDeinit(Arena *arena); // Free all the buffers in a arena
 void *ArenaPushNoZero(Arena *arena, U64 size); // Get a memory region with no zero initialization
 void *ArenaPush(Arena *arena, U64 size); // get a memory region with zero initalization
-void ArenaReset(Arena *arena); // set the 
+void ArenaReset(Arena *arena); // reset all the positions in the linked list of arena's to zero
 static inline void ArenaSetAutoAlign(Arena *arena, U64 align) { // We have default alignment of 8
   arena->align = align;
 }

@@ -1,31 +1,61 @@
-#include <stdint.h>
-#include <stdio.h>
 #include "boardio.h"
+
+#include <stdio.h>
+
+// Read the whole file info a buffer located on the arena
+U8 *LoadFileDataArena(Arena *arena, const char *filepath, U32 *bytes_read) {
+  FILE *fp = fopen(filepath, "rb");
+  
+  if (fp) {
+    fseek(fp, 0, SEEK_END);
+    *bytes_read = ftell(fp);
+    rewind(fp);
+
+    U8 *buffer = ArenaPushNoZero(arena, *bytes_read);
+    fread(buffer, *bytes_read, 1, fp);
+
+    fclose(fp);
+
+    return buffer;
+
+  } else fprintf(stderr, "couldn't open file \"%s\"\n", filepath);
+
+  return NULL;
+}
+
+
 
 // get bitboard of input file. make sure index
 // is only either 0 (black pieces) or 1 (white pieces). 
-uint64_t* getBitBoard(char* fileName) {
-  // gonna use malloc here, not sure how to use arena allocator
-  uint64_t* bitBoards = (uint64_t*) malloc(sizeof(uint64_t)*2);
+BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName) {
+  BitBoard board = { 0 };
 
-  FILE* readFile = fopen(fileName, "r");
-  uint64_t b = 0, w = 0;
+  // since this data is only temporaly needed
+  TempArena temp = TempArenaInit(tempArena);
 
-  char c;
-  while ((c = fgetc(readFile)) != EOF) {
-    if (c == '\n') continue;
+  U32 bytesRead = 0;
+  U8 *buffer = LoadFileDataArena(tempArena, fileName, &bytesRead);
 
-    b <<= 1;
-    w <<= 1;
+  U32 row = 0;
+  U32 col = 0;
+  for (U32 index = 0; index < bytesRead; index++) {
+    if (buffer[index] == '\n') {
+      col = 0;
+      row += 1;
+      continue;
+    } 
 
-    if (c == 'B') b++;
-    else if (c == 'W') w++;
+    if (buffer[index] != 'O') board.rows[row] |= 1llu<<col;
+
+    
+    col += 1;
   }
+  
 
-  fclose(readFile);
+  TempArenaDeinit(temp);
+  // After we are done allocations 
+  // we can "free" all the memory 
+  // that we used during our calculations
 
-  bitBoards[0] = b;
-  bitBoards[1] = w;
-
-  return bitBoards;
+  return board;
 }
