@@ -9,7 +9,17 @@
   
 */
 
+#ifndef BOARDIO_H
+#define BOARDIO_H
+
+#include <stdio.h>
 #include "types.h"
 #include "arena.h"
 
+
 BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName);
+void BitBoardFilePrint(FILE *fp, BitBoard board);
+Coord CoordFromEnemyInput(void);
+void CoordOutputMove(Coord coord);
+
+#endif

@@ -21,6 +21,8 @@
 #include "boardio.h"
 #include "arena.h"
 
+#include <string.h>
+
 
 
 /**
@@ -86,7 +88,7 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
 
   // for each of our pieces
   for (U8 index = 0; index < 32; index++) {
-    Coord coord = IndexToCoord(index);
+    Coord coord = CoordFromIndex(index);
     U64 pieceMask = 1llu << index;
     U64 moveMask = 0llu;
     U64 killMask = 0llu;
@@ -111,20 +113,50 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
 
 
 
+
 int main(int argc, char** argv) {
+  char *boardFilePath = NULL;
+  
+  FILE *dump = fopen("dump.txt", "w");
+
+  if (argc > 3) {
+    printf("Dude, you got to use this thing properly");
+    return -1;  
+  } else {
+    boardFilePath = argv[1];
+    
+  }
+
 
   Arena *arena = ArenaInit(Gigabyte(4)); // Don't worry this won't actually allocate 4 gigabytes
 
-  BitBoard board1 = BitBoardFromFile(arena, "boardstate1.txt");
-  BitBoard board2 = BitBoardFromFile(arena, "boardstate2.txt");
+  BitBoard board = BitBoardFromFile(arena, boardFilePath);
 
-  PrintBoard(board1);
-  printf("NOW THIS IS THE SECOND ONE\n");
-  PrintBoard(board2);
+  printf("E4\n");
+
+  Coord e4 = (Coord){4, 3};
+
+  board.whole &= ~(1<<(IndexFromCoord(e4)));
+
+  fprintf(dump, "Player: (%d, %d)\n", e4.x, e4.y);
+
+
+  Coord enemyStone = CoordFromEnemyInput();
+
+  fprintf(dump, "ENEMY: (%d, %d)", enemyStone.x, enemyStone.y);
+
+  board.whole &= ~(1<<(IndexFromCoord(enemyStone)));
+
+  BitBoardFilePrint(dump, board);
+
+  
+
 
   
 
   // deinitalization
   ArenaDeinit(arena);
+
+  fclose(dump);
   return 0;
 }

@@ -16,6 +16,19 @@ typedef signed long long  I64;
 
 #define MyAssert(expr) if (!expr) *((U32*)0) = 0xDEAD
 
+
+typedef U8 PlayerKind;
+enum {
+  PlayerKind_White,
+  PlayerKind_Black,
+};
+
+typedef U8 Bool;
+enum {
+  Bool_False,
+  Bool_True,
+};
+
 enum {
   Direction_right,
   Direction_left,
@@ -47,16 +60,16 @@ struct StateNode {
 
 typedef struct Coord Coord;
 struct Coord {
-  U8 x;
-  U8 y;
+  I8 x;
+  I8 y;
 };
 
 
-static inline Coord IndexToCoord(U8 index) {
+static inline Coord CoordFromIndex(U8 index) {
   return (Coord){.x = index % 8, .y = index / 8};
 }
 
-static inline U8 CoordToIndex(Coord coord) {
+static inline U8 IndexFromCoord(Coord coord) {
   return coord.x + coord.y * 8;
 }
 
