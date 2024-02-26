@@ -41,6 +41,12 @@ struct TempArena {
   U64 align;
 };
 
+typedef struct StateNodePool StateNodePool;
+struct StateNodePool {
+  Arena *arena;
+  StateNode *freeList;
+};
+
 
 
 Arena *ArenaInit(U64 capacity); // Initalize a Arena with a certain an inital buffer
@@ -54,6 +60,11 @@ static inline void ArenaSetAutoAlign(Arena *arena, U64 align) { // We have defau
 
 TempArena TempArenaInit(Arena *backing_arena); // begin a temporary arena
 void TempArenaDeinit(TempArena temp_arena); // end a temporary arena
+
+StateNodePool *StateNodePoolInit(Arena *backingArena); // we dont need deinit cause when we deinit the arena the pool will go with it
+StateNode *StateNodePoolAlloc(StateNodePool *pool);
+void StateNodePoolFree(StateNode *node);
+
 
 
 

@@ -83,3 +83,33 @@ void TempArenaDeinit(TempArena temp_arena) {
   temp_arena.arena->pos = temp_arena.pos;
   temp_arena.arena->align = temp_arena.align;
 }
+
+StateNodePool *StateNodePoolInit(Arena *backingArena) {
+  StateNodePool *pool = ArenaPushNoZero(backingArena, sizeof(StateNodePool));
+  pool->arena = backingArena;
+  pool->freeList = NULL;
+  return pool;
+}
+
+StateNode *StateNodePoolAlloc(StateNodePool *pool) {
+  if (pool->freeList) {
+    StateNode *node = pool->freeList;
+    pool->freeList = pool->freeList->next;
+    memset(node, 0, sizeof(StateNode)); // memzero
+    return node;
+
+  } else {
+    return ArenaPush(pool->arena, sizeof(StateNode));
+  }
+}
+
+void StateNodePoolFree(StateNodePool *pool, StateNode *node) {
+  StateNode *prev = node->prev;
+  StateNode *next = node->next;
+
+  if (prev) prev->next = next;
+  if (next) next->prev = prev;
+
+  node->next = pool->freeList;
+  pool->freeList = node;
+}

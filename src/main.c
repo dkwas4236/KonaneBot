@@ -115,6 +115,7 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
 
 
 int main(int argc, char** argv) {
+  Bool gaming = Bool_True;
   char *boardFilePath = NULL;
   
   FILE *dump = fopen("dump.txt", "w");
@@ -134,7 +135,7 @@ int main(int argc, char** argv) {
 
   printf("E4\n");
 
-  Coord e4 = (Coord){4, 3};
+  Coord e4 = (Coord){4, 4};
 
   board.whole &= ~(1<<(IndexFromCoord(e4)));
 
@@ -143,7 +144,7 @@ int main(int argc, char** argv) {
 
   Coord enemyStone = CoordFromEnemyInput();
 
-  fprintf(dump, "ENEMY: (%d, %d)", enemyStone.x, enemyStone.y);
+  fprintf(dump, "ENEMY: (%d, %d)\n", enemyStone.x, enemyStone.y);
 
   board.whole &= ~(1<<(IndexFromCoord(enemyStone)));
 
