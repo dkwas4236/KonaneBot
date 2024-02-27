@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include "types.h"
-#include "arena.h"
+#include "allocators.h"
 
 
 BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName);

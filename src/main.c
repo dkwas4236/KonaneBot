@@ -19,7 +19,7 @@
 #define BITMOVES_IMPLEMENTATION
 #include "bitmoves.h"
 #include "boardio.h"
-#include "arena.h"
+#include "allocators.h"
 
 #include <string.h>
 
