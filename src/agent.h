@@ -5,3 +5,10 @@
   COPYRIGHT:
     Copyright 2024 Isaac McCracken - All rights reserved
 */
+#include "types.h"
+
+
+U64 getPlayerEmptySpace(char player, BitBoard board);
+U64* getMovablePieces(U64 jump, BitBoard board, char player); 
+
+ 
