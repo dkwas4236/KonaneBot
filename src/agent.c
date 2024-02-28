@@ -3,12 +3,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "allocators.h"
+#include <stdio.h>
 
 #define ALL_BLACK 0xAA55AA55AA55AA55
 #define ALL_WHITE 0x55AA55AA55AA55AA
 
 bool shiftValid(U64 jump, U8 shift, bool max);
-void StateNodePushChild(StateNode *parent, StateNode *child);
+
 
 
 void StateNodeCalcCost(StateNode* node, char player) {
@@ -25,42 +26,45 @@ for each direction  -> create new board with applied moves
                     -> eval the board
                     -> create state node and connect as child to current node
 */
-StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, PlayerKind playerKind) {
+StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, char playerKind) {
   // 0b01 if black pieces, 0b10 if white pieces
-  U64 currentSpace = (playerKind == PlayerKind_Black) ? 1 : 2;
-  U64 playerEmpty = getPlayerEmptySpace(playerKind,parent->board);
-
+  U64 currentSpace = (playerKind == PlayerKind_White) ? 0x2 : 0x1;
+  U64 playerEmpty = getPlayerEmptySpace(parent->board, playerKind);
+  printf("Creating nodes for %d\n", playerKind);
+  printf("Starting space is %llu\n", currentSpace);
+  printf("playerEmpty is: %llu\n", playerEmpty);
   // Go through all squares
-  for(U8 i=0; i < 32; i++) {
-    // Go to next piece
-    currentSpace <<= i*2;
 
-    // If this square is empty, calculate possible moves
-    if (playerEmpty & currentSpace) {
-
-      // Get a list of all pieces that can jump to this square
-      U64* piecesList = getMovablePieces(currentSpace);
-
-      // Check each direction: up, left, down, right, from [0, 4)
+  U8 counter = 0;
+  U64 checker = playerEmpty, jumpSpace;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, parent->board, playerKind);
       for (int j = 0; j < 4; j++) {
         // Only create a new state if a move exists in the given direction
         if (piecesList[j]) {
-          // (piecesList[j] | currentSpace) we | currentSpace to make current space non-empty
-          BitBoard board = parent->board^(piecesList[j]|currentSpace);
+          BitBoard board;
+          board.whole = (parent->board.whole)^(piecesList[j]|(jumpSpace << counter));
           StateNode* child = StateNodePoolAlloc(pool);
           child->board = board;
           StateNodePushChild(parent, child);
+          printf("Created Node\t%llu\n", piecesList[j]);
         }
       }
     }
+    checker >>= 1;
+    counter++;
   }
+  printf("Children count: %llu\n", StateNodeCountChildren(parent));
+
 }
 
 /*
  * This function simply gets all the empty spots the given player can land on.
  */
-U64 getPlayerEmptySpace(U8 player, BitBoard board) {
-  return (player == 0) ? ~board.whole ^ ALL_WHITE : ~board.whole ^ ALL_BLACK;
+U64 getPlayerEmptySpace(BitBoard board, char player) {
+  return (player == PlayerKind_White) ? (~board.whole) & ALL_WHITE : (~board.whole) & ALL_BLACK;
 }
 
 /*
@@ -74,11 +78,11 @@ U64 getPlayerEmptySpace(U8 player, BitBoard board) {
  */
 U64* getMovablePieces(U64 jump, BitBoard board, char player) {
   // Not using arena since this is not a state
-  U64* piecesModified = malloc(4*sizeof(int));
+  U64* piecesModified = malloc(4*sizeof(U64));
   U8 dirs = 0xF;
-  U64 playerBoard = (player == 'W') ? board.whole & ALL_WHITE : board.whole & ALL_BLACK;
-  U64 oppBoard = (player == 'W') ? board.whole & ALL_BLACK : board.whole & ALL_WHITE;  
-  U64 allOppBoard = (player == 'W') ? ALL_BLACK : ALL_WHITE;
+  U64 playerBoard = (player == PlayerKind_White) ? board.whole & ALL_WHITE : board.whole & ALL_BLACK;
+  U64 oppBoard = (player == PlayerKind_White) ? board.whole & ALL_BLACK : board.whole & ALL_WHITE;  
+  U64 allOppBoard = (player == PlayerKind_White) ? ALL_BLACK : ALL_WHITE;
 
   for (int checkRange=0; checkRange < 7; checkRange++) {
     U8 vShift = 8*(checkRange+1), hShift = (checkRange+1);
@@ -98,7 +102,7 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
     // Check left direction
     if ((dirs & 0x4) && shiftValid(jump, hShift, true)) {
       checkJump = jump << hShift;
-      if (!(hShift%2) && checkJump & allOppBoard) dirs &= 0xB;
+      if (!(hShift%2) && (checkJump & allOppBoard)) dirs &= 0xB;
       else if (checkJump & playerBoard) {
         dirs &= 0xB;
         piecesModified[1] ^= checkJump;
@@ -121,21 +125,21 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
     // Check right direction
     if ((dirs & 0x1) && shiftValid(jump, hShift, false)) {
       checkJump = jump >> hShift;
-      if (!(hShift%2) && checkJump & allOppBoard) dirs &= 0xE;
+      if (!(hShift%2) && (checkJump & allOppBoard)) dirs &= 0xE;
       else if (checkJump & playerBoard) {
         dirs &= 0xE;
         piecesModified[3] ^= checkJump;
       }
-      else if (hShift%2 && checkJump & ~oppBoard) dirs &= 0xE;
+      else if (hShift%2 && (checkJump & ~oppBoard)) dirs &= 0xE;
       else if (checkJump & oppBoard) piecesModified[3] ^= checkJump;
 
     } else dirs &= 0xE;
   }
 
-  if (!piecesModified[0] & playerBoard) piecesModified[0] = 0;
-  if (!piecesModified[1] & playerBoard) piecesModified[1] = 0;
-  if (!piecesModified[2] & playerBoard) piecesModified[2] = 0;
-  if (!piecesModified[3] & playerBoard) piecesModified[3] = 0;
+  if (!(piecesModified[0] & playerBoard)) piecesModified[0] = 0;
+  if (!(piecesModified[1] & playerBoard)) piecesModified[1] = 0;
+  if (!(piecesModified[2] & playerBoard)) piecesModified[2] = 0;
+  if (!(piecesModified[3] & playerBoard)) piecesModified[3] = 0;
 
   return piecesModified;
 } 
@@ -166,11 +170,12 @@ void StateNodePushChild(StateNode *parent, StateNode *child) {
   }
 }
 
+
 U64 StateNodeCountChildren(StateNode *node) {
   U64 count = 0;
-  StateNode *node = node;
-  while (node) {
-    node = node->next;
+  StateNode *curr = node->firstChild;
+  while (curr) {
+    curr = curr->next;
     count++;
   }
 
