@@ -163,6 +163,7 @@ int main(int argc, char** argv) {
   
   // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
   // center pieces
+  // DELETE THIS WHEN DONE WITH DEMO
   for (int i = 0; i < 2; i++) {
     if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
       printf("%s\n", randomStart);
@@ -212,9 +213,9 @@ int main(int argc, char** argv) {
   // fprintf(dump, "Player: (%d, %d)\n", e4.x, e4.y);
   // board.whole ^= (1llu<<IndexFromCoord(e4));
 
-  // Coord enemyStone = CoordFromEnemyInput();
-  // fprintf(dump, "ENEMY: (%d, %d)\n", enemyStone.x, enemyStone.y);
-  // board.whole ^= (1llu<<IndexFromCoord(enemyStone));
+  Coord enemyStone = CoordFromEnemyInput();
+  fprintf(dump, "ENEMY: (%d, %d)\n", enemyStone.x, enemyStone.y);
+  board.whole ^= (1llu<<IndexFromCoord(enemyStone));
 
 
   BitBoardFilePrint(dump, board);
