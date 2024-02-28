@@ -10,6 +10,8 @@
 */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define THINKING_TIME 10
@@ -22,8 +24,6 @@
 #include "allocators.h"
 
 #include <string.h>
-
-
 
 /**
  * @brief This is a debug print for printing the bit board
@@ -109,11 +109,6 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
 }
 
 
-
-
-
-
-
 int main(int argc, char** argv) {
   Bool gaming = Bool_True;
   char *boardFilePath = NULL;
@@ -128,33 +123,44 @@ int main(int argc, char** argv) {
     
   }
 
-
   Arena *arena = ArenaInit(Gigabyte(4)); // Don't worry this won't actually allocate 4 gigabytes
 
   BitBoard board = BitBoardFromFile(arena, boardFilePath);
 
-  printf("E4\n");
+  // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
+  // center pieces
+  char player = (*argv[2] == 'W') ? 'W' : 'B';
+  U64 playerBoard = (player == 'W')? board.whole & allWhite : board.whole & allBlack;
+
+  srand(time(NULL));
+  char playerStartingMoves[2][3];
+  if (player == 'W') {
+    strcpy(playerStartingMoves[0], "D4");
+    strcpy(playerStartingMoves[1], "E5");
+  } else {
+    strcpy(playerStartingMoves[0], "D5");
+    strcpy(playerStartingMoves[1], "E4");
+  }
+
+  char randomStart[2];
+  strcpy(randomStart, playerStartingMoves[rand() % 2]);
+  
+  if (!(playerBoard ^ board.whole)) printf("%s\n", randomStart);
+  else {
+    
+  }
+  //
+  
 
   Coord e4 = (Coord){4, 4};
 
-  board.whole &= ~(1<<(IndexFromCoord(e4)));
-
   fprintf(dump, "Player: (%d, %d)\n", e4.x, e4.y);
-
+  board.whole ^= (1<<IndexFromCoord(e4));
 
   Coord enemyStone = CoordFromEnemyInput();
-
   fprintf(dump, "ENEMY: (%d, %d)\n", enemyStone.x, enemyStone.y);
-
   board.whole &= ~(1<<(IndexFromCoord(enemyStone)));
-
   BitBoardFilePrint(dump, board);
-
-  
-
-
-  
-
   // deinitalization
   ArenaDeinit(arena);
 
