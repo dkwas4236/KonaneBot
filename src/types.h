@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <stdio.h>
+
 typedef unsigned char       U8;
 typedef unsigned short      U16;
 typedef unsigned int        U32;
@@ -66,11 +68,11 @@ struct Coord {
 
 
 static inline Coord CoordFromIndex(U8 index) {
-  return (Coord){.x = index % 8, .y = index / 8};
+  return (Coord){.x = (index % 8), .y = (index / 8)+1};
 }
 
 static inline U8 IndexFromCoord(Coord coord) {
-  return (coord.x) + (coord.y-1) * 8;
+  return (coord.x-1) + 8*(coord.y-1);
 }
 
 

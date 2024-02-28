@@ -6,6 +6,7 @@
 // This function was written by Kaiden Kaine in december of 2023
 // I have gotten permission to use it.
 U8 *LoadFileDataArena(Arena *arena, const char *filepath, U32 *bytes_read) {
+  
   FILE *fp = fopen(filepath, "rb");
   
   if (fp) {
@@ -15,13 +16,12 @@ U8 *LoadFileDataArena(Arena *arena, const char *filepath, U32 *bytes_read) {
 
     U8 *buffer = ArenaPushNoZero(arena, *bytes_read);
     fread(buffer, *bytes_read, 1, fp);
-
+    
     fclose(fp);
-
     return buffer;
 
   } else fprintf(stderr, "couldn't open file \"%s\"\n", filepath);
-
+  
   return NULL;
 }
 
@@ -31,13 +31,13 @@ U8 *LoadFileDataArena(Arena *arena, const char *filepath, U32 *bytes_read) {
 // is only either 0 (black pieces) or 1 (white pieces). 
 BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName) {
   BitBoard board = { 0 };
-
+  
   // since this data is only temporaly needed
   // We can use the temp arena, after we are done
   // we can use TempArenaDeinit() to reset the 
   // arena to its original state.
   TempArena temp = TempArenaInit(tempArena);
-
+  
   U32 bytesRead = 0;
   U8 *buffer = LoadFileDataArena(tempArena, fileName, &bytesRead);
 
@@ -52,12 +52,23 @@ BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName) {
     if (buffer[index] != 'O') board.rows[row] |= 1llu<<col;
     col += 1;
   }
-
+  
+  board.whole &= 0;
+  U8 start = 63;
+  for (U32 index = 0; index < bytesRead; index++) {
+    if (buffer[index] == '\n') continue;
+    if (buffer[index] == 'O') {
+      start--;
+      continue;
+    }
+    board.whole |= (1llu << start--);
+  }
+  
   // After we are done allocations 
   // we can "free" all the memory 
   // that we used during our calculations
   TempArenaDeinit(temp);
-
+  
   return board;
 }
 
@@ -100,7 +111,16 @@ Coord CoordFromEnemyInput(void) {
   I8 y = getchar();
   getchar();
   Coord coord;
-  coord.x = x - 'A';
-  coord.y = 8 - (y - '0');
+  coord.x = (('X' - x)%8) + 1;
+  coord.y = (y - '1') + 1;
   return coord;
+}
+
+Coord CoordFromInput(char* coord){
+  I8 x = coord[0];
+  I8 y = coord[1];
+  Coord returnCoord;
+  returnCoord.x = (('X' - x)%8) + 1;
+  returnCoord.y = (y - '1') + 1;
+  return returnCoord;
 }

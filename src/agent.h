@@ -9,10 +9,15 @@
 #define AGENT_H
 
 #include "types.h"
+#include "allocators.h"
 
+// REMOVE THIS AFTER DEMO
+U64 getUpMove(BitBoard board, char player);
 
-U64 getPlayerEmptySpace(char player, BitBoard board);
+U64 getPlayerEmptySpace(BitBoard board, char player);
 U64* getMovablePieces(U64 jump, BitBoard board, char player); 
-
+StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, char playerKind);
+U64 StateNodeCountChildren(StateNode *node);
+void StateNodePushChild(StateNode *parent, StateNode *child);
 
 #endif

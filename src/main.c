@@ -17,11 +17,13 @@
 #define THINKING_TIME 10
 #define BOARD_WIDTH 8
 
+
 #include "types.h"
 #define BITMOVES_IMPLEMENTATION
 #include "bitmoves.h"
 #include "boardio.h"
 #include "allocators.h"
+#include "agent.h"
 
 #include <string.h>
 
@@ -54,26 +56,23 @@ void PrintBoard(BitBoard board) {
   }
 }
 
-void StateNodePushChild(StateNode *parent, StateNode *child) {
-  if (parent->lastChild) {
-    MyAssert(parent->firstChild);
-    // link parent to new child
-    StateNode *oldLast = parent->lastChild;
-    parent->lastChild = child;
-    // link children to each other
-    child->prev = oldLast;
-    oldLast->next = child;
-    // increase child count (child count could be useless)
-    parent->childCount++;
-  } else {
-    parent->firstChild = child;
-    parent->lastChild = child;
-    parent->childCount = 1;
-  }
-}
-
-
-
+// void StateNodePushChild(StateNode *parent, StateNode *child) {
+//   if (parent->lastChild) {
+//     MyAssert(parent->firstChild);
+//     // link parent to new child
+//     StateNode *oldLast = parent->lastChild;
+//     parent->lastChild = child;
+//     // link children to each other
+//     child->prev = oldLast;
+//     oldLast->next = child;
+//     // increase child count (child count could be useless)
+//     parent->childCount++;
+//   } else {
+//     parent->firstChild = child;
+//     parent->lastChild = child;
+//     parent->childCount = 1;
+//   }
+// }
 
 void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
   const BitBoard board = parent->board;
@@ -110,13 +109,14 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
 
 
 int main(int argc, char** argv) {
+  
   Bool gaming = Bool_True;
   char *boardFilePath = NULL;
   
   FILE *dump = fopen("dump.txt", "w");
 
   if (argc > 3) {
-    printf("Dude, you got to use this thing properly");
+    printf("Dude, you got to use this thing properly\n");
     return -1;  
   } else {
     boardFilePath = argv[1];
@@ -127,14 +127,13 @@ int main(int argc, char** argv) {
 
   BitBoard board = BitBoardFromFile(arena, boardFilePath);
 
-  // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
-  // center pieces
-  char player = (*argv[2] == 'W') ? 'W' : 'B';
-  U64 playerBoard = (player == 'W')? board.whole & allWhite : board.whole & allBlack;
+  U8 player = (*argv[2] == 'W') ?  PlayerKind_White : PlayerKind_Black;
+  U64 playerBoard = (player == PlayerKind_White) ? board.whole & allWhite : board.whole & allBlack;
+  U64 allPlayerBoard = (player == PlayerKind_White) ? allWhite : allBlack;
 
   srand(time(NULL));
   char playerStartingMoves[2][3];
-  if (player == 'W') {
+  if (player == PlayerKind_White) {
     strcpy(playerStartingMoves[0], "D4");
     strcpy(playerStartingMoves[1], "E5");
   } else {
@@ -142,26 +141,85 @@ int main(int argc, char** argv) {
     strcpy(playerStartingMoves[1], "E4");
   }
 
-  char randomStart[2];
+  char randomStart[3];
   strcpy(randomStart, playerStartingMoves[rand() % 2]);
   
+  // // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
+  // // center pieces
   // if (!(playerBoard ^ board.whole)) printf("%s\n", randomStart);
   // else {
+  //   // do generated moves here
   // }
-  printf("E4\n");
-  printf("E2-E4\n");
-  //
+  // printf("E4\n");
+  // printf("E2-E4\n");
+
+  // STRT TEST - John
+  // StateNodePool* stateNodePool = StateNodePoolInit(arena);
+  // StateNode* stateNode = StateNodePoolAlloc(stateNodePool);
+  // stateNode->board = board;
+  // U64 playerCanGoTo = getPlayerEmptySpace(stateNode->board, player);
+  // StateNodeGenerateChildren(stateNodePool, stateNode, player);
+  // STOP TEST - John
+  
+  // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
+  // center pieces
+  // DELETE THIS WHEN DONE WITH DEMO
+  for (int i = 0; i < 2; i++) {
+    if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
+      printf("%s\n", randomStart);
+      board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
+    }
+    else {
+      // create only top moves for demo
+      U64 move = getUpMove(board, player);
+      U64 piece = move & allPlayerBoard;
+      U64 moveHere = ~board.whole & move;
+      
+      U8 countPiece = 0;
+      while (piece) {
+        piece >>= 1;
+        countPiece++;
+      }
+
+      U8 countMoveHere = 0;
+      while (moveHere) {
+        moveHere >>= 1;
+        countMoveHere++;
+      }
+
+      Coord pieceCoord = CoordFromIndex(countPiece);
+      Coord moveToCoord = CoordFromIndex(countMoveHere);
+
+      // 3, 5 = F5
+      // D - 70: 'H' - 3 + 1
+      // 5 - 53: '0' + 5
+      // 5, 6 = D6
+      char pCx, pCy, mTCx, mTCy;
+      pCx = 'H' - pieceCoord.x + 1;
+      pCy = '0' + pieceCoord.y;
+      mTCx = 'H' - moveToCoord.x + 1;
+      mTCy = '0' + moveToCoord.y;
+
+      char pCXYmove[] = {pCx, pCy, '\0'};
+      char mTCXYmove[] = {mTCx, mTCy, '\0'};
+
+      printf("%s-%s\n", pCXYmove, mTCXYmove);
+      board.whole ^= move;
+    }
+  }
   
 
-  Coord e4 = (Coord){4, 4};
-
-  fprintf(dump, "Player: (%d, %d)\n", e4.x, e4.y);
-  board.whole ^= (1<<IndexFromCoord(e4));
+  // Coord e4 = (Coord){4, 4};
+  // fprintf(dump, "Player: (%d, %d)\n", e4.x, e4.y);
+  // board.whole ^= (1llu<<IndexFromCoord(e4));
 
   Coord enemyStone = CoordFromEnemyInput();
   fprintf(dump, "ENEMY: (%d, %d)\n", enemyStone.x, enemyStone.y);
-  board.whole &= ~(1<<(IndexFromCoord(enemyStone)));
+  board.whole ^= (1llu<<IndexFromCoord(enemyStone));
+
+
   BitBoardFilePrint(dump, board);
+
   // deinitalization
   ArenaDeinit(arena);
 
