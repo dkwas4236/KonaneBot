@@ -145,10 +145,11 @@ int main(int argc, char** argv) {
   char randomStart[2];
   strcpy(randomStart, playerStartingMoves[rand() % 2]);
   
-  if (!(playerBoard ^ board.whole)) printf("%s\n", randomStart);
-  else {
-    
-  }
+  // if (!(playerBoard ^ board.whole)) printf("%s\n", randomStart);
+  // else {
+  // }
+  printf("E4\n");
+  printf("E2-E4\n");
   //
   
 

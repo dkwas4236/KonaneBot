@@ -30,10 +30,10 @@ enum {
 };
 
 enum {
-  Direction_right,
-  Direction_left,
   Direction_up,
+  Direction_left,
   Direction_down,
+  Direction_right,
 };
 
 
