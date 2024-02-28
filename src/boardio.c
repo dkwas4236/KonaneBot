@@ -40,7 +40,7 @@ BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName) {
   
   U32 bytesRead = 0;
   U8 *buffer = LoadFileDataArena(tempArena, fileName, &bytesRead);
-  
+
   U32 row = 0;
   U32 col = 0;
   for (U32 index = 0; index < bytesRead; index++) {
@@ -114,4 +114,13 @@ Coord CoordFromEnemyInput(void) {
   coord.x = (('X' - x)%8) + 1;
   coord.y = (y - '1') + 1;
   return coord;
+}
+
+Coord CoordFromInput(char* coord){
+  I8 x = coord[0];
+  I8 y = coord[1];
+  Coord returnCoord;
+  returnCoord.x = (('X' - x)%8) + 1;
+  returnCoord.y = (y - '1') + 1;
+  return returnCoord;
 }

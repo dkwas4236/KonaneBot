@@ -30,9 +30,9 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
   // 0b01 if black pieces, 0b10 if white pieces
   U64 currentSpace = (playerKind == PlayerKind_White) ? 0x2 : 0x1;
   U64 playerEmpty = getPlayerEmptySpace(parent->board, playerKind);
-  printf("Creating nodes for %d\n", playerKind);
-  printf("Starting space is %llu\n", currentSpace);
-  printf("playerEmpty is: %llu\n", playerEmpty);
+  // printf("Creating nodes for %d\n", playerKind);
+  // printf("Starting space is %llu\n", currentSpace);
+  // printf("playerEmpty is: %llu\n", playerEmpty);
   // Go through all squares
 
   U8 counter = 0;
@@ -49,15 +49,34 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
           StateNode* child = StateNodePoolAlloc(pool);
           child->board = board;
           StateNodePushChild(parent, child);
-          printf("Created Node\t%llu\n", piecesList[j]);
+          // printf("Created Node\t%llu\n", piecesList[j]);
         }
       }
     }
     checker >>= 1;
     counter++;
   }
-  printf("Children count: %llu\n", StateNodeCountChildren(parent));
+  // printf("Children count: %llu\n", StateNodeCountChildren(parent));
 
+}
+
+U64 getUpMove(BitBoard board, char player) {
+  U64 playerEmpty = getPlayerEmptySpace(board, player);
+  U64 allplayer = (player == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
+  U8 counter = 0;
+  U64 checker = playerEmpty, jumpSpace;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, board, player);
+      if (piecesList[0]) {
+        return ((piecesList[0]|(jumpSpace << counter))&allplayer);
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+  return 0;
 }
 
 /*
@@ -79,6 +98,13 @@ U64 getPlayerEmptySpace(BitBoard board, char player) {
 U64* getMovablePieces(U64 jump, BitBoard board, char player) {
   // Not using arena since this is not a state
   U64* piecesModified = malloc(4*sizeof(U64));
+
+  // Initialize values
+  piecesModified[0] &= 0;
+  piecesModified[1] &= 0;
+  piecesModified[2] &= 0;
+  piecesModified[3] &= 0;
+
   U8 dirs = 0xF;
   U64 playerBoard = (player == PlayerKind_White) ? board.whole & ALL_WHITE : board.whole & ALL_BLACK;
   U64 oppBoard = (player == PlayerKind_White) ? board.whole & ALL_BLACK : board.whole & ALL_WHITE;  

@@ -68,7 +68,7 @@ struct Coord {
 
 
 static inline Coord CoordFromIndex(U8 index) {
-  return (Coord){.x = index % 8, .y = index / 8};
+  return (Coord){.x = (index % 8), .y = (index / 8)+1};
 }
 
 static inline U8 IndexFromCoord(Coord coord) {

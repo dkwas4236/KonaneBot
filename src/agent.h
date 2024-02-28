@@ -11,6 +11,9 @@
 #include "types.h"
 #include "allocators.h"
 
+// REMOVE THIS AFTER DEMO
+U64 getUpMove(BitBoard board, char player);
+
 U64 getPlayerEmptySpace(BitBoard board, char player);
 U64* getMovablePieces(U64 jump, BitBoard board, char player); 
 StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, char playerKind);
