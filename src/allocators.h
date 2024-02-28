@@ -63,7 +63,7 @@ void TempArenaDeinit(TempArena temp_arena); // end a temporary arena
 
 StateNodePool *StateNodePoolInit(Arena *backingArena); // we dont need deinit cause when we deinit the arena the pool will go with it
 StateNode *StateNodePoolAlloc(StateNodePool *pool);
-void StateNodePoolFree(StateNode *node);
+void StateNodePoolFree(StateNodePool *, StateNode *node);
 
 
 

@@ -70,7 +70,7 @@ static inline Coord CoordFromIndex(U8 index) {
 }
 
 static inline U8 IndexFromCoord(Coord coord) {
-  return coord.x + coord.y * 8;
+  return (coord.x) + (coord.y-1) * 8;
 }
 
 

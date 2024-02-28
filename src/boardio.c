@@ -1,5 +1,5 @@
 #include "boardio.h"
-
+#include <ctype.h>
 #include <stdio.h>
 
 // Read the whole file info a buffer located on the arena
@@ -49,13 +49,9 @@ BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName) {
       row += 1;
       continue;
     } 
-
     if (buffer[index] != 'O') board.rows[row] |= 1llu<<col;
-
-    
     col += 1;
   }
-  
 
   // After we are done allocations 
   // we can "free" all the memory 
@@ -66,16 +62,32 @@ BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName) {
 }
 
 void BitBoardFilePrint(FILE *fp, BitBoard board) {
+  U8 counter = 63;
+  char c;
+  
   for (U8 i = 0; i < 8; i++) {
     for (U8 j = 0; j < 8; j++) {
-      U8 color = (i + j) % 2 ;
-      char c = (board.rows[i] & (1<<j)) > 0;
-      if (c) c = (color)? 'W': 'B';
-      else c = 'O';
+      if ((i+j)%2 && ((1llu << counter) & board.whole)) c = 'W';
+      else if ((1llu << counter) & board.whole) c = 'B';
+      else {
+        c = 'O';
+      }
+      counter--;
       putc(c, fp);
     }
     putc('\n', fp);
   }
+
+  // for (U8 i = 0; i < 8; i++) {
+  //   for (U8 j = 0; j < 8; j++) {
+  //     U8 color = (i + j) % 2 ;
+  //     char c = (board.rows[i] & (1<<j)) > 0;
+  //     if (c) c = (color)? 'W': 'B';
+  //     else c = 'O';
+  //     putc(c, fp);
+  //   }
+  //   putc('\n', fp);
+  // }
 }
 
 void CoordOutputMove(Coord coord) {
@@ -84,11 +96,11 @@ void CoordOutputMove(Coord coord) {
 }
 
 Coord CoordFromEnemyInput(void) {
-  I8 x = getchar();
+  I8 x = toupper(getchar());
   I8 y = getchar();
   getchar();
   Coord coord;
   coord.x = x - 'A';
-  coord.y = 8 - (y - '1');
+  coord.y = 8 - (y - '0');
   return coord;
 }
