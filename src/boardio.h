@@ -21,6 +21,8 @@ BitBoard BitBoardFromFile(Arena *tempArena, const char* fileName);
 void BitBoardFilePrint(FILE *fp, BitBoard board);
 Coord CoordFromEnemyInput(void);
 Coord CoordFromInput(char* coord);
+Coord* multipleCoordsInput();
 void CoordOutputMove(Coord coord);
+void mainInput(BitBoard* board, char player);
 
 #endif
