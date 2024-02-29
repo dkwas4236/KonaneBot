@@ -177,6 +177,9 @@ int main(int argc, char** argv) {
 
   // input algo:
   //    first move? -> use CoordFromEnemyInput(), continue
+  //    else
+  //    input move function -> returns * 2 coords
+  //    then,
   //    determine if move is horizontal or vertical
   //    can find this out using Coord1, Coord2
   //    starting point: 1llu << IndexFromCoord(Coord1)

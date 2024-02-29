@@ -124,3 +124,32 @@ Coord CoordFromInput(char* coord){
   returnCoord.y = (y - '1') + 1;
   return returnCoord;
 }
+
+// [0] first coord, [1] second coord
+Coord* multipleCoordsInput() {
+  Coord* coords = malloc(2*sizeof(Coord));
+  coords[0] = (Coord){0, 0};
+  coords[1] = (Coord){0, 0};
+
+  char c1x = toupper(getchar());
+  char c1y = getchar();
+
+  // Remove '-'
+  getchar();
+
+  char c2x = toupper(getchar());
+  char c2y = getchar();
+
+  // Remove '\n'
+  getchar();
+
+  char  coord1[] = {c1x, c1y, '\0'},
+        coord2[] = {c2x, c2y, '\0'};
+
+  coords[0] = CoordFromInput(coord1);
+  coords[1] = CoordFromInput(coord2);
+
+  return coords;
+}
+
+
