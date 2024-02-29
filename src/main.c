@@ -107,7 +107,6 @@ void GenerateAllMoves(Arena *arena, StateNode *parent, U64 turn) {
   
 }
 
-
 int main(int argc, char** argv) {
   
   Bool gaming = Bool_True;
@@ -162,60 +161,56 @@ int main(int argc, char** argv) {
   // STOP TEST - John
   
   // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
-  // center pieces
-  // DELETE THIS WHEN DONE WITH DEMO
-  for (int i = 0; i < 2; i++) {
-    if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
-      printf("%s\n", randomStart);
-      board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
-    }
-    else {
-      // create only top moves for demo
-      U64 move = getUpMove(board, player);
-      U64 piece = move & allPlayerBoard;
-      U64 moveHere = ~board.whole & move;
-      
-      U8 countPiece = 0;
-      while (piece) {
-        piece >>= 1;
-        countPiece++;
-      }
-
-      U8 countMoveHere = 0;
-      while (moveHere) {
-        moveHere >>= 1;
-        countMoveHere++;
-      }
-
-      Coord pieceCoord = CoordFromIndex(countPiece);
-      Coord moveToCoord = CoordFromIndex(countMoveHere);
-
-      // 3, 5 = F5
-      // D - 70: 'H' - 3 + 1
-      // 5 - 53: '0' + 5
-      // 5, 6 = D6
-      char pCx, pCy, mTCx, mTCy;
-      pCx = 'H' - pieceCoord.x + 1;
-      pCy = '0' + pieceCoord.y;
-      mTCx = 'H' - moveToCoord.x + 1;
-      mTCy = '0' + moveToCoord.y;
-
-      char pCXYmove[] = {pCx, pCy, '\0'};
-      char mTCXYmove[] = {mTCx, mTCy, '\0'};
-
-      printf("%s-%s\n", pCXYmove, mTCXYmove);
-      board.whole ^= move;
-    }
-  }
+  // if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
+  //   printf("%s\n", randomStart);
+  //   board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
+  // }
   
-
   // Coord e4 = (Coord){4, 4};
   // fprintf(dump, "Player: (%d, %d)\n", e4.x, e4.y);
   // board.whole ^= (1llu<<IndexFromCoord(e4));
 
-  Coord enemyStone = CoordFromEnemyInput();
-  fprintf(dump, "ENEMY: (%d, %d)\n", enemyStone.x, enemyStone.y);
-  board.whole ^= (1llu<<IndexFromCoord(enemyStone));
+  // Coord enemyStone = CoordFromEnemyInput();
+  // fprintf(dump, "ENEMY: (%d, %d)\n", enemyStone.x, enemyStone.y);
+  // board.whole ^= (1llu<<IndexFromCoord(enemyStone));
+
+
+  // input algo:
+  //    first move? -> use CoordFromEnemyInput(), continue
+  //    determine if move is horizontal or vertical
+  //    can find this out using Coord1, Coord2
+  //    starting point: 1llu << IndexFromCoord(Coord1)
+  //    if Coord1.y == Coord2.y -> horizontal
+  //      shift amount: abs(Coord1.x - Coord2.x)
+  //      if Coord1.x - Coord2.x < 0 -> left shift
+  //        for loop i (1, shift amount)
+  //        left shift (i) from starting point, |= 1 each time
+  //      else                       -> right shift
+  //        for loop i (1, shift amount)
+  //        right shift (i) from starting point, |= 1 each time
+  //     
+  //    if Coord1.x == Coord2.x -> vertical
+  //      shift amount: abs(Coord1.y - Coord2.y)
+  //      if Coord1.y - Coord2.y < 0 -> left shift
+  //        for loop i (1, shift amount)
+  //          left shift (i*8) from starting point, |= 1 each time
+  //      else                       -> right shift
+  //        for loop i (1, shift amount)
+  //          right shift (i*8) from starting point, |= 1 each time
+  //      
+  bool blackIsPlayer = (player == PlayerKind_White) ? false : true;
+  while (gaming) {
+    if (blackIsPlayer) {
+      // input()
+      // agent
+    }
+
+    else {
+      // agent
+      // input()
+    }
+  }
+
 
 
   BitBoardFilePrint(dump, board);
