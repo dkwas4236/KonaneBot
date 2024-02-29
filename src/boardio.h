@@ -23,5 +23,6 @@ Coord CoordFromEnemyInput(void);
 Coord CoordFromInput(char* coord);
 Coord* multipleCoordsInput();
 void CoordOutputMove(Coord coord);
+void mainInput(BitBoard* board, char player);
 
 #endif

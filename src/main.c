@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 
 #define THINKING_TIME 10
@@ -126,13 +127,14 @@ int main(int argc, char** argv) {
 
   BitBoard board = BitBoardFromFile(arena, boardFilePath);
 
-  U8 player = (*argv[2] == 'W') ?  PlayerKind_White : PlayerKind_Black;
-  U64 playerBoard = (player == PlayerKind_White) ? board.whole & allWhite : board.whole & allBlack;
-  U64 allPlayerBoard = (player == PlayerKind_White) ? allWhite : allBlack;
+  U8 agentPlayer = (*argv[2] == 'W') ?  PlayerKind_White : PlayerKind_Black;
+  U64 playerBoard = (agentPlayer == PlayerKind_White) ? board.whole & allWhite : board.whole & allBlack;
+  U64 allPlayerBoard = (agentPlayer == PlayerKind_White) ? allWhite : allBlack;
+  U8 agentOpponent = (agentPlayer == PlayerKind_White) ? PlayerKind_Black : PlayerKind_White;
 
   srand(time(NULL));
   char playerStartingMoves[2][3];
-  if (player == PlayerKind_White) {
+  if (agentPlayer == PlayerKind_White) {
     strcpy(playerStartingMoves[0], "D4");
     strcpy(playerStartingMoves[1], "E5");
   } else {
@@ -175,43 +177,61 @@ int main(int argc, char** argv) {
   // board.whole ^= (1llu<<IndexFromCoord(enemyStone));
 
 
-  // input algo:
-  //    first move? -> use CoordFromEnemyInput(), continue
+  // input algo:    -> takes *board, player  -> returns none
+  //    first move? -> use CoordFromEnemyInput(), continue DONE
   //    else
-  //    input move function -> returns * 2 coords
+  //    input move function -> returns * 2 coords DONE
   //    then,
-  //    determine if move is horizontal or vertical
-  //    can find this out using Coord1, Coord2
-  //    starting point: 1llu << IndexFromCoord(Coord1)
+  //    determine if move is horizontal or vertical     
+  //    can find this out using Coord1, Coord2          
+  //    starting point: 1llu << IndexFromCoord(Coord1)  
   //    if Coord1.y == Coord2.y -> horizontal
   //      shift amount: abs(Coord1.x - Coord2.x)
   //      if Coord1.x - Coord2.x < 0 -> left shift
   //        for loop i (1, shift amount)
-  //        left shift (i) from starting point, |= 1 each time
+  //          left shift 1 from starting point, |= 1 each time
   //      else                       -> right shift
   //        for loop i (1, shift amount)
-  //        right shift (i) from starting point, |= 1 each time
+  //          right shift 1 from starting point, |= 1 each time
   //     
   //    if Coord1.x == Coord2.x -> vertical
   //      shift amount: abs(Coord1.y - Coord2.y)
   //      if Coord1.y - Coord2.y < 0 -> left shift
   //        for loop i (1, shift amount)
-  //          left shift (i*8) from starting point, |= 1 each time
+  //          left shift 8 from starting point, |= 1 each time
   //      else                       -> right shift
   //        for loop i (1, shift amount)
-  //          right shift (i*8) from starting point, |= 1 each time
+  //          right shift 8 from starting point, |= 1 each time
   //      
-  bool blackIsPlayer = (player == PlayerKind_White) ? false : true;
-  while (gaming) {
-    if (blackIsPlayer) {
-      // input()
+  bool blackIsAgent = (agentPlayer == PlayerKind_White) ? false : true;
+  int turns = 2;
+  while (turns--) {
+    if (blackIsAgent) {
+
+      // Agent starting move
+      if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
+        printf("%s\n", randomStart);
+        board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
+      }
       // agent
+
+      // input()
+      mainInput(&board, agentOpponent);
     }
 
     else {
-      // agent
+      mainInput(&board, agentOpponent);
       // input()
+
+      // agent
+      // Agent starting move
+      if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
+        printf("%s\n", randomStart);
+        board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
+      }
     }
+    // show board
+    BitBoardFilePrint(dump, board);
   }
 
 
