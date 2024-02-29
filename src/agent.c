@@ -11,7 +11,6 @@
 bool shiftValid(U64 jump, U8 shift, bool max);
 
 
-
 void StateNodeCalcCost(StateNode* node, char player) {
   // get # of pieces we have
   // get # of pieces enemy has
@@ -109,6 +108,7 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
   U64 playerBoard = (player == PlayerKind_White) ? board.whole & ALL_WHITE : board.whole & ALL_BLACK;
   U64 oppBoard = (player == PlayerKind_White) ? board.whole & ALL_BLACK : board.whole & ALL_WHITE;  
   U64 allOppBoard = (player == PlayerKind_White) ? ALL_BLACK : ALL_WHITE;
+  U64 allPlayerBoard = (player == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
 
   for (int checkRange=0; checkRange < 7; checkRange++) {
     U8 vShift = 8*(checkRange+1), hShift = (checkRange+1);
@@ -123,18 +123,30 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if ((checkRange+1)%2 && checkJump & ~oppBoard) dirs &= 0x7;
       else if (checkJump & oppBoard) piecesModified[0] ^= checkJump;
+      // This spot can be double jumped. Disable other direction until
+      // max spot has been found
+      else {
+        piecesModified[2] = 0;
+        dirs &= 0xD;
+      }
     } else dirs &= 0x7;
 
     // Check left direction
     if ((dirs & 0x4) && shiftValid(jump, hShift, true)) {
       checkJump = jump << hShift;
-      if (!(hShift%2) && (checkJump & allOppBoard)) dirs &= 0xB;
+      // Checks if row is same
+      if (!(hShift%2) && (checkJump & allOppBoard) || 
+          (hShift%2) && (checkJump & allPlayerBoard)) dirs &= 0xB;
       else if (checkJump & playerBoard) {
         dirs &= 0xB;
         piecesModified[1] ^= checkJump;
       }
       else if (hShift%2 && checkJump & ~oppBoard) dirs &= 0xB;
       else if (checkJump & oppBoard) piecesModified[1] ^= checkJump;
+      else {
+        piecesModified[3] = 0;
+        dirs &= 0xE;
+      }
     } else dirs &= 0xB;
     
     // Check down direction
@@ -146,19 +158,27 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if ((checkRange+1)%2 && checkJump & ~oppBoard) dirs &= 0xD;
       else if (checkJump & oppBoard) piecesModified[2] ^= checkJump;
+      else {
+        piecesModified[0] = 0;
+        dirs &= 0x7;
+      }
     } else dirs &= 0xD;
 
     // Check right direction
     if ((dirs & 0x1) && shiftValid(jump, hShift, false)) {
       checkJump = jump >> hShift;
-      if (!(hShift%2) && (checkJump & allOppBoard)) dirs &= 0xE;
+      if (!(hShift%2) && (checkJump & allOppBoard) || 
+          (hShift%2) && (checkJump & allPlayerBoard)) dirs &= 0xE;
       else if (checkJump & playerBoard) {
         dirs &= 0xE;
         piecesModified[3] ^= checkJump;
       }
       else if (hShift%2 && (checkJump & ~oppBoard)) dirs &= 0xE;
       else if (checkJump & oppBoard) piecesModified[3] ^= checkJump;
-
+      else {
+        piecesModified[1] = 0;
+        dirs &= 0xB;
+      }
     } else dirs &= 0xE;
   }
 
