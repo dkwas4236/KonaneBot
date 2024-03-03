@@ -209,6 +209,7 @@ int main(int argc, char** argv) {
     if (blackIsAgent) {
 
       // Agent starting move
+      printf("Agent move: ");
       if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
         printf("%s\n", randomStart);
         board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
@@ -225,13 +226,15 @@ int main(int argc, char** argv) {
 
       // agent
       // Agent starting move
+      printf("Agent move: ");
       if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
         printf("%s\n", randomStart);
         board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
       }
     }
+
     // show board
-    BitBoardFilePrint(dump, board);
+    printBoardToConsole(&board);
   }
 
 

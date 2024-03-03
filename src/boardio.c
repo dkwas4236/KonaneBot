@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "bitmoves.h"
+#include "types.h"
 
 // Read the whole file info a buffer located on the arena
 // This function was written by Kaiden Kaine in december of 2023
@@ -162,6 +163,8 @@ Coord* multipleCoordsInput() {
 void mainInput(BitBoard* board, char player) {
   U64 allPlayerBoard = (player == PlayerKind_White) ? allWhite : allBlack;
   
+  printf("Your move: ");
+
   // First move
   if (!((board->whole & allPlayerBoard) ^ allPlayerBoard)) {
     Coord enemyStone = CoordFromEnemyInput();
@@ -224,4 +227,51 @@ void mainInput(BitBoard* board, char player) {
   
   board->whole ^= startBit;
   free(coordMove);
+}
+
+void printBoardToConsole(BitBoard* board) {
+  int boardShift = 63;
+  char colour;
+
+  printf("\n");
+
+  // Row (123...)
+  for (int i = 0; i < 10; i++) {
+    // Column (ABC...)
+    for (int j = 0; j < 10; j++) {
+      
+      // Top and bottom letter column printing
+      if (i == 0 || i == 9) {
+        if (j >= 1 && j <= 8) {
+          // 64 is char '@'
+          printf("%c ", 64+j);
+        }
+        else {
+          printf("  ");
+        }
+        continue;
+      }
+
+      // Column printing
+      if (j == 0 || j == 9) {
+        // Print row numbers at this spots
+        // 57 is char '9'
+        printf("%c ", 57-i);
+      }
+      
+      else {
+        // Print board status
+        if (!((board->whole & (1llu << boardShift)) & allPieces)) colour = 'O';
+        else if ((board->whole & (1llu << boardShift)) & allBlack) colour = 'B';
+        else if ((board->whole & (1llu << boardShift)) & allWhite) colour = 'W';
+        printf("%c ", colour);
+        boardShift--;
+      }
+    }
+    printf("\n");
+  }
+
+  printf("\n");
+
+  return;
 }

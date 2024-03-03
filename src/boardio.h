@@ -24,5 +24,6 @@ Coord CoordFromInput(char* coord);
 Coord* multipleCoordsInput();
 void CoordOutputMove(Coord coord);
 void mainInput(BitBoard* board, char player);
+void printBoardToConsole(BitBoard* board);
 
 #endif

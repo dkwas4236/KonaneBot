@@ -195,7 +195,7 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
  */
 bool shiftValid(U64 jump, U8 shift, bool max) {
   if (max) return (jump < (0xFFFFFFFFFFFFFFFF >> shift))? true : false;
-  return (jump > (1 << shift))? true : false;
+  return (jump >= (1 << shift))? true : false;
 }
 
 void StateNodePushChild(StateNode *parent, StateNode *child) {
