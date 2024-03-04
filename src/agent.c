@@ -11,7 +11,7 @@
 
 #define ALL_BLACK 0xAA55AA55AA55AA55
 #define ALL_WHITE 0x55AA55AA55AA55AA
-#define DEPTH 5
+#define DEPTH 6
 
 bool shiftValid(U64 jump, U8 shift, bool max);
 
@@ -102,6 +102,7 @@ void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool) {
   for (StateNode* child = stateNode->firstChild; child; child=child->next) {
     if (agentPlayer == PlayerKind_White && child->score >= newState->score) newState = child;
     else if (child->score <= newState->score) newState = child;
+    // printf("State score: %d\n", child->score);
   }
 
   printf("%s\n", newState->move);
