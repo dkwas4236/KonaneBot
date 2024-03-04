@@ -312,12 +312,12 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if ((checkRange+1)%2 && checkJump & ~oppBoard) dirs &= 0x7;
       else if (checkJump & oppBoard) piecesModified[0] ^= checkJump;
-      // This spot can be double jumped. Disable other direction until
-      // max spot has been found
-      else {
-        piecesModified[2] = 0;
-        dirs &= 0xD;
-      }
+      // // This spot can be double jumped. Disable other direction until
+      // // max spot has been found
+      // else {
+      //   piecesModified[2] = 0;
+      //   dirs &= 0xD;
+      // }
     } else dirs &= 0x7;
 
     // Check left direction
@@ -332,10 +332,10 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if (hShift%2 && checkJump & ~oppBoard) dirs &= 0xB;
       else if (checkJump & oppBoard) piecesModified[1] ^= checkJump;
-      else {
-        piecesModified[3] = 0;
-        dirs &= 0xE;
-      }
+      // else {
+      //   piecesModified[3] = 0;
+      //   dirs &= 0xE;
+      // }
     } else dirs &= 0xB;
     
     // Check down direction
@@ -347,10 +347,10 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if ((checkRange+1)%2 && checkJump & ~oppBoard) dirs &= 0xD;
       else if (checkJump & oppBoard) piecesModified[2] ^= checkJump;
-      else {
-        piecesModified[0] = 0;
-        dirs &= 0x7;
-      }
+      // else {
+      //   piecesModified[0] = 0;
+      //   dirs &= 0x7;
+      // }
     } else dirs &= 0xD;
 
     // Check right direction
@@ -364,10 +364,10 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if (hShift%2 && (checkJump & ~oppBoard)) dirs &= 0xE;
       else if (checkJump & oppBoard) piecesModified[3] ^= checkJump;
-      else {
-        piecesModified[1] = 0;
-        dirs &= 0xB;
-      }
+      // else {
+      //   piecesModified[1] = 0;
+      //   dirs &= 0xB;
+      // }
     } else dirs &= 0xE;
   }
 
