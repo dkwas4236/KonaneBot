@@ -188,7 +188,7 @@ Coord* multipleCoordsInput() {
 void mainInput(BitBoard* board, char player) {
   U64 allPlayerBoard = (player == PlayerKind_White) ? allWhite : allBlack;
   
-  printf("Your move: ");
+  // printf("Your move: ");
 
   // First move
   if (!((board->whole & allPlayerBoard) ^ allPlayerBoard)) {

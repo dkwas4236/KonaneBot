@@ -133,17 +133,17 @@ int main(int argc, char** argv) {
   U8 agentOpponent = (agentPlayer == PlayerKind_White) ? PlayerKind_Black : PlayerKind_White;
 
   srand(time(NULL));
-  char playerStartingMoves[2][3];
-  if (agentPlayer == PlayerKind_White) {
-    strcpy(playerStartingMoves[0], "D4");
-    strcpy(playerStartingMoves[1], "E5");
-  } else {
-    strcpy(playerStartingMoves[0], "D5");
-    strcpy(playerStartingMoves[1], "E4");
-  }
+  // char playerStartingMoves[2][3];
+  // if (agentPlayer == PlayerKind_White) {
+  //   strcpy(playerStartingMoves[0], "D4");
+  //   strcpy(playerStartingMoves[1], "E5");
+  // } else {
+  //   strcpy(playerStartingMoves[0], "D5");
+  //   strcpy(playerStartingMoves[1], "E4");
+  // }
 
-  char randomStart[3];
-  strcpy(randomStart, playerStartingMoves[rand() % 2]);
+  // char randomStart[3];
+  // strcpy(randomStart, playerStartingMoves[rand() % 2]);
   
   // // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
   // // center pieces
@@ -202,16 +202,10 @@ int main(int argc, char** argv) {
   //          right shift 8 from starting point, |= 1 each time
   //      
   bool blackIsAgent = (agentPlayer == PlayerKind_White) ? false : true;
-  int turns = 2;
-  while (turns--) {
+  int turns = 4;
+  while (gaming) {
     if (blackIsAgent) {
-
-      // Agent starting move
-      printf("Agent move: ");
-      if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
-        printf("%s\n", randomStart);
-        board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
-      }
+      agentMove(agentPlayer, &board, stateNodePool);
       // agent
 
       // input()
@@ -223,21 +217,14 @@ int main(int argc, char** argv) {
       // input()
 
       // agent
-      // Agent starting move
-      printf("Agent move: ");
-      if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
-        printf("%s\n", randomStart);
-        board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
-      }
+      agentMove(agentPlayer, &board, stateNodePool);
     }
 
-    StateNode* stateNode = StateNodePoolAlloc(stateNodePool);
-    stateNode->board = board;
+    // calculate score
+    // minimax(pool, child, 2, INT_MIN, INT_MAX, (playerKind == PlayerKind_White) ? true : false);
 
     // show board
-    printBoardToConsole(&board);
-
-    StateNodeGenerateChildren(stateNodePool, stateNode, PlayerKind_White);
+    // printBoardToConsole(&board);
     // StateNodePoolFree(stateNodePool, stateNode);
   }
 

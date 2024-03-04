@@ -6,11 +6,62 @@
 #include <stdio.h>
 #include <string.h>
 #include "boardio.h"
+#include <time.h>
+#include <limits.h>
 
 #define ALL_BLACK 0xAA55AA55AA55AA55
 #define ALL_WHITE 0x55AA55AA55AA55AA
+#define DEPTH 1000
 
 bool shiftValid(U64 jump, U8 shift, bool max);
+
+
+void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool) {
+  // printf("Agent move: ");
+
+  U64 allPlayerBoard = (agentPlayer == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
+  
+  char playerStartingMoves[2][3];
+  if (agentPlayer == PlayerKind_White) {
+    strcpy(playerStartingMoves[0], "D4");
+    strcpy(playerStartingMoves[1], "E5");
+  } else {
+    strcpy(playerStartingMoves[0], "D5");
+    strcpy(playerStartingMoves[1], "E4");
+  }
+  char randomStart[3];
+  strcpy(randomStart, playerStartingMoves[rand() % 2]);
+  strcpy(randomStart, playerStartingMoves[1]);
+
+  // First move
+  if (!((board->whole & allPlayerBoard) ^ allPlayerBoard)) {
+    printf("%s\n", randomStart);
+    board->whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
+    return;
+  }
+
+  // Determine best move: Generate children of possible moves
+  StateNode* stateNode = StateNodePoolAlloc(pool);
+  stateNode->board = *board;
+  StateNodeGenerateChildren(pool, stateNode, agentPlayer);
+
+  // Go through all children and set their score as minimax()
+  for (StateNode* child = stateNode->firstChild; child; child=child->next) {
+    child->score = minimax(pool, child, DEPTH, INT_MIN, INT_MAX, (agentPlayer == PlayerKind_White) ?
+      1 : 0);
+  }
+
+  // Go through all children and print their score
+  I32 bestScore = (agentPlayer == PlayerKind_White) ? INT_MAX : INT_MIN;
+  StateNode* newState = stateNode->firstChild;
+  for (StateNode* child = stateNode->firstChild; child; child=child->next) {
+    if (agentPlayer == PlayerKind_White && child->score >= newState->score) newState = child;
+    else if (child->score <= newState->score) newState = child;
+  }
+
+  printf("%s\n", newState->move);
+  *board = newState->board;
+}
 
 
 // score < 0: black favoured (black has more pieces to move)
@@ -79,6 +130,7 @@ void StateNodeCalcCost(StateNode* node) {
 
 StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, char playerKind) {
   // 0b01 if black pieces, 0b10 if white pieces
+
   U64 currentSpace = (playerKind == PlayerKind_White) ? 0x2 : 0x1;
   U64 playerEmpty = getPlayerEmptySpace(parent->board, playerKind);
   U64 allPlayer = (playerKind == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
@@ -96,7 +148,9 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
           board.whole = (parent->board.whole)^(piecesList[j]|(jumpSpace << counter));
           StateNode* child = StateNodePoolAlloc(pool);
           child->board = board;
-          StateNodeCalcCost(child);
+
+          // Change this to minimax
+          // StateNodeCalcCost(child);
 
           char coord[3];
           bitToTextCoord(piecesList[j] & allPlayer, coord);
@@ -118,6 +172,53 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
   // printf("Children count: %llu\n", StateNodeCountChildren(parent));
 
 }
+
+
+// For the minimax functions
+I32 minimax(StateNodePool *pool, StateNode* node, I32 depth, I32 alpha, I32 beta, I32 maximizingPlayer) {
+  if (depth == 0 || node->childCount == 0) {
+    //Run Evaluation Function
+    StateNodeCalcCost(node);
+    return node->score;
+  }
+
+  if (maximizingPlayer) {
+    I32 maxEval = INT_MIN;
+
+    // Generate children as white
+    StateNodeGenerateChildren(pool, node, PlayerKind_White);
+    
+    for (StateNode* child = node->firstChild; child != NULL; child = child->next) {
+      I32 eval = minimax(pool, child, depth -1, alpha, beta, false);
+      maxEval = max(maxEval, eval);
+      alpha = max(alpha, eval);
+      if (beta <= alpha) {
+        break;
+      }
+    }
+    return maxEval;
+  }
+
+  else {
+    I32 minEval = INT_MAX;
+
+    // Generate children as black
+    StateNodeGenerateChildren(pool, node, PlayerKind_Black);
+
+    for (StateNode* child = node->firstChild; child != NULL; child = child->next) {
+      I32 eval = minimax(pool, child, depth -1, alpha, beta, true);
+      minEval = min(minEval, eval);
+      beta = min(beta, eval);
+      if (beta <= alpha) {
+        break;
+      }
+    }
+    return minEval;
+  }
+
+}
+
+
 
 /*
  * This function simply gets all the empty spots the given player can land on.
