@@ -20,7 +20,7 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
 U64 StateNodeCountChildren(StateNode *node);
 void StateNodePushChild(StateNode *parent, StateNode *child);
 void StateNodeCalcCost(StateNode* node);
-void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool);
+void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool, int depth);
 
 // For the minimax functions
 // Max and Min functions

@@ -61,7 +61,7 @@ bool isOver(StateNode* node) {
 }
 
 
-void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool) {
+void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool, int depth) {
   // printf("Agent move: ");
 
   U64 allPlayerBoard = (agentPlayer == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
@@ -91,7 +91,7 @@ void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool) {
 
   // Go through all children and set their score as minimax()
   for (StateNode* child = stateNode->firstChild; child; child=child->next) {
-    child->score = minimax(pool, child, DEPTH, INT_MIN, INT_MAX, (agentPlayer == PlayerKind_White) ?
+    child->score = minimax(pool, child, depth, INT_MIN, INT_MAX, (agentPlayer == PlayerKind_White) ?
       1 : 0);
   }
 

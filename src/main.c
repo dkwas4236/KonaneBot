@@ -202,12 +202,13 @@ int main(int argc, char** argv) {
   //          right shift 8 from starting point, |= 1 each time
   //      
   bool blackIsAgent = (agentPlayer == PlayerKind_White) ? false : true;
-  int turns = 4;
+  int turns = 1;
+  int depth = 6;
   while (gaming) {
+    if (turns >= 8) depth = 5;
     if (blackIsAgent) {
-      agentMove(agentPlayer, &board, stateNodePool);
+      agentMove(agentPlayer, &board, stateNodePool, depth);
       // agent
-
       // input()
       mainInput(&board, agentOpponent);
     }
@@ -218,7 +219,7 @@ int main(int argc, char** argv) {
       // agent
 
       // Somehow this fixes drivercheck
-      agentMove(agentPlayer, &board, stateNodePool);
+      agentMove(agentPlayer, &board, stateNodePool, depth);
       mainInput(&board, agentOpponent);
     }
 
@@ -228,6 +229,7 @@ int main(int argc, char** argv) {
     // show board
     // printBoardToConsole(&board);
     // StateNodePoolFree(stateNodePool, stateNode);
+    turns++;
   }
 
 
