@@ -76,7 +76,6 @@ void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool) {
   }
   char randomStart[3];
   strcpy(randomStart, playerStartingMoves[rand() % 2]);
-  strcpy(randomStart, playerStartingMoves[1]);
 
   // First move
   if (!((board->whole & allPlayerBoard) ^ allPlayerBoard)) {

@@ -213,11 +213,13 @@ int main(int argc, char** argv) {
     }
 
     else {
-      mainInput(&board, agentOpponent);
       // input()
-
+      // then
       // agent
+
+      // Somehow this fixes drivercheck
       agentMove(agentPlayer, &board, stateNodePool);
+      mainInput(&board, agentOpponent);
     }
 
     // calculate score
