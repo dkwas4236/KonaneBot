@@ -231,13 +231,13 @@ int main(int argc, char** argv) {
       }
     }
 
-    // StateNode* stateNode = StateNodePoolAlloc(stateNodePool);
-    // stateNode->board = board;
+    StateNode* stateNode = StateNodePoolAlloc(stateNodePool);
+    stateNode->board = board;
 
     // show board
     printBoardToConsole(&board);
 
-    // StateNodeGenerateChildren(stateNodePool, stateNode, PlayerKind_White);
+    StateNodeGenerateChildren(stateNodePool, stateNode, PlayerKind_White);
     // StateNodePoolFree(stateNodePool, stateNode);
   }
 

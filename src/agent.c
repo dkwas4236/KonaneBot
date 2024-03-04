@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include "allocators.h"
 #include <stdio.h>
+#include <string.h>
+#include "boardio.h"
 
 #define ALL_BLACK 0xAA55AA55AA55AA55
 #define ALL_WHITE 0x55AA55AA55AA55AA
@@ -66,29 +68,20 @@ void StateNodeCalcCost(StateNode* node) {
     counter++;
   }
 
-  printf("White pieces: %d\n", __builtin_popcountll(whitePieces));
-  printf("Black pieces: %d\n", __builtin_popcountll(blackPieces));
+  // printBoardToConsole(&node->board);
+  // printf("# of white pieces movable: %d\n", __builtin_popcountll(whitePieces));
+  // printf("# of black pieces movable: %d\n", __builtin_popcountll(blackPieces));
+  // printf("This state's score: %d\n", __builtin_popcountll(whitePieces) - __builtin_popcountll(blackPieces));
 
   node->score = __builtin_popcountll(whitePieces)-__builtin_popcountll(blackPieces);
 }
 
 
-/*
-TODO: Create function that goes through all squares.
-If getPlayerEmptySpace & currentSpace -> getMovablePieces
-
-for each direction  -> create new board with applied moves
-                    -> eval the board
-                    -> create state node and connect as child to current node
-*/
 StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, char playerKind) {
   // 0b01 if black pieces, 0b10 if white pieces
   U64 currentSpace = (playerKind == PlayerKind_White) ? 0x2 : 0x1;
   U64 playerEmpty = getPlayerEmptySpace(parent->board, playerKind);
-  // printf("Creating nodes for %d\n", playerKind);
-  // printf("Starting space is %llu\n", currentSpace);
-  // printf("playerEmpty is: %llu\n", playerEmpty);
-  // Go through all squares
+  U64 allPlayer = (playerKind == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
 
   U8 counter = 0;
   U64 checker = playerEmpty, jumpSpace;
@@ -104,8 +97,18 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
           StateNode* child = StateNodePoolAlloc(pool);
           child->board = board;
           StateNodeCalcCost(child);
+
+          char coord[3];
+          bitToTextCoord(piecesList[j] & allPlayer, coord);
+          strcat(child->move, coord);
+          strcat(child->move, "-");
+
+          bitToTextCoord(jumpSpace << counter, coord);
+          strcat(child->move, coord);
+
+          // printf("Child with move %s created\n", child->move);
+
           StateNodePushChild(parent, child);
-          // printf("Created Node\t%llu\n", piecesList[j]);
         }
       }
     }
