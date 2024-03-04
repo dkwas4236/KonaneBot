@@ -155,9 +155,7 @@ int main(int argc, char** argv) {
   // printf("E2-E4\n");
 
   // STRT TEST - John
-  // StateNodePool* stateNodePool = StateNodePoolInit(arena);
-  // StateNode* stateNode = StateNodePoolAlloc(stateNodePool);
-  // stateNode->board = board;
+  StateNodePool* stateNodePool = StateNodePoolInit(arena);
   // U64 playerCanGoTo = getPlayerEmptySpace(stateNode->board, player);
   // StateNodeGenerateChildren(stateNodePool, stateNode, player);
   // STOP TEST - John
@@ -233,8 +231,14 @@ int main(int argc, char** argv) {
       }
     }
 
+    // StateNode* stateNode = StateNodePoolAlloc(stateNodePool);
+    // stateNode->board = board;
+
     // show board
     printBoardToConsole(&board);
+
+    // StateNodeGenerateChildren(stateNodePool, stateNode, PlayerKind_White);
+    // StateNodePoolFree(stateNodePool, stateNode);
   }
 
 

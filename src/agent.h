@@ -19,5 +19,6 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player);
 StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, char playerKind);
 U64 StateNodeCountChildren(StateNode *node);
 void StateNodePushChild(StateNode *parent, StateNode *child);
+void StateNodeCalcCost(StateNode* node);
 
 #endif

@@ -11,9 +11,65 @@
 bool shiftValid(U64 jump, U8 shift, bool max);
 
 
-void StateNodeCalcCost(StateNode* node, char player) {
-  // get # of pieces we have
-  // get # of pieces enemy has
+// score < 0: black favoured (black has more pieces to move)
+// score > 0: white favoured (white has more pieces to move)
+// score = 0: equal pieces move
+void StateNodeCalcCost(StateNode* node) {
+  // These hold the pieces that are able to move
+  U64 whitePieces = 0, blackPieces = 0;
+  
+  // Get white pieces empty spots
+  U64 whiteSpots = getPlayerEmptySpace(node->board, PlayerKind_White);
+
+  // This algo is really weird.
+  // In short, the algo will go through each square.
+  // If the square is empty, call getMovablePieces() to get all the pieces that can
+  // move into this square.
+  // & each direction with ALL_WHITE to get the piece that can move to the empty square
+  // | each piece with whitePieces
+  // Now we have all the whitePieces that can move
+  U8 counter = 0;
+  U64 checker = whiteSpots, jumpSpace;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_White);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          whitePieces |= (piecesList[j] & ALL_WHITE);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  // Same thing as white pieces but with black pieces.
+  U64 blackSpots = getPlayerEmptySpace(node->board, PlayerKind_Black);
+  counter = 0;
+  checker = blackSpots;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_Black);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          blackPieces |= (piecesList[j] & ALL_BLACK);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  printf("White pieces: %d\n", __builtin_popcountll(whitePieces));
+  printf("Black pieces: %d\n", __builtin_popcountll(blackPieces));
+
+  node->score = __builtin_popcountll(whitePieces)-__builtin_popcountll(blackPieces);
 }
 
 
@@ -47,6 +103,7 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
           board.whole = (parent->board.whole)^(piecesList[j]|(jumpSpace << counter));
           StateNode* child = StateNodePoolAlloc(pool);
           child->board = board;
+          StateNodeCalcCost(child);
           StateNodePushChild(parent, child);
           // printf("Created Node\t%llu\n", piecesList[j]);
         }
@@ -57,25 +114,6 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
   }
   // printf("Children count: %llu\n", StateNodeCountChildren(parent));
 
-}
-
-U64 getUpMove(BitBoard board, char player) {
-  U64 playerEmpty = getPlayerEmptySpace(board, player);
-  U64 allplayer = (player == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
-  U8 counter = 0;
-  U64 checker = playerEmpty, jumpSpace;
-  while (checker) {
-    jumpSpace = checker & 1;
-    if (jumpSpace) {
-      U64* piecesList = getMovablePieces(jumpSpace << counter, board, player);
-      if (piecesList[0]) {
-        return ((piecesList[0]|(jumpSpace << counter))&allplayer);
-      }
-    }
-    checker >>= 1;
-    counter++;
-  }
-  return 0;
 }
 
 /*

@@ -56,6 +56,7 @@ struct StateNode {
   StateNode *firstChild;
   StateNode *lastChild;
   U64 childCount;
+  I32 score;
 };
 
 
