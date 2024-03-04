@@ -11,9 +11,54 @@
 
 #define ALL_BLACK 0xAA55AA55AA55AA55
 #define ALL_WHITE 0x55AA55AA55AA55AA
-#define DEPTH 1000
+#define DEPTH 5
 
 bool shiftValid(U64 jump, U8 shift, bool max);
+
+
+bool isOver(StateNode* node) {
+  U64 whitePieces = 0, blackPieces = 0;
+  U64 whiteSpots = getPlayerEmptySpace(node->board, PlayerKind_White);
+  U8 counter = 0;
+  U64 checker = whiteSpots, jumpSpace;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_White);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          whitePieces |= (piecesList[j] & ALL_WHITE);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  // Same thing as white pieces but with black pieces.
+  U64 blackSpots = getPlayerEmptySpace(node->board, PlayerKind_Black);
+  counter = 0;
+  checker = blackSpots;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_Black);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          blackPieces |= (piecesList[j] & ALL_BLACK);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  return !(whitePieces && blackPieces);
+}
 
 
 void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool) {
@@ -176,7 +221,8 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
 
 // For the minimax functions
 I32 minimax(StateNodePool *pool, StateNode* node, I32 depth, I32 alpha, I32 beta, I32 maximizingPlayer) {
-  if (depth == 0 || node->childCount == 0) {
+  // printf("Depth remaining: %d\n", depth);
+  if (depth == 0 || isOver(node)) {
     //Run Evaluation Function
     StateNodeCalcCost(node);
     return node->score;
