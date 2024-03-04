@@ -1,9 +1,10 @@
-#include "boardio.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "bitmoves.h"
 #include "types.h"
+#include "boardio.h"
 
 // Read the whole file info a buffer located on the arena
 // This function was written by Kaiden Kaine in december of 2023
@@ -104,6 +105,30 @@ void BitBoardFilePrint(FILE *fp, BitBoard board) {
   // }
 }
 
+void bitToTextCoord(U64 bit, char* textCoord) {
+  U8 row = 0, column = 0;
+  
+  // row:
+  // if 0: '1'
+  // if 7: '8'
+  while (bit >> 8) {
+    row++;
+    bit >>= 8;
+  }
+  
+  // column
+  // if 0: 'H'
+  // if 7: 'A'
+  while (bit >> 1) {
+    column++;
+    bit >>= 1;
+  }
+
+  // ColumnRow ('H'-column), ('1' + row)
+  textCoord[0] = 'H' - column;
+  textCoord[1] = '1' + row;
+  textCoord[2] = '\0';
+}
 
 void CoordOutputMove(Coord coord) {
   putchar('A' + coord.x);
@@ -163,7 +188,7 @@ Coord* multipleCoordsInput() {
 void mainInput(BitBoard* board, char player) {
   U64 allPlayerBoard = (player == PlayerKind_White) ? allWhite : allBlack;
   
-  printf("Your move: ");
+  // printf("Your move: ");
 
   // First move
   if (!((board->whole & allPlayerBoard) ^ allPlayerBoard)) {

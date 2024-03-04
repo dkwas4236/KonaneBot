@@ -4,35 +4,181 @@
 #include <stdlib.h>
 #include "allocators.h"
 #include <stdio.h>
+#include <string.h>
+#include "boardio.h"
+#include <time.h>
+#include <limits.h>
 
 #define ALL_BLACK 0xAA55AA55AA55AA55
 #define ALL_WHITE 0x55AA55AA55AA55AA
+#define DEPTH 5
 
 bool shiftValid(U64 jump, U8 shift, bool max);
 
 
-void StateNodeCalcCost(StateNode* node, char player) {
-  // get # of pieces we have
-  // get # of pieces enemy has
+bool isOver(StateNode* node) {
+  U64 whitePieces = 0, blackPieces = 0;
+  U64 whiteSpots = getPlayerEmptySpace(node->board, PlayerKind_White);
+  U8 counter = 0;
+  U64 checker = whiteSpots, jumpSpace;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_White);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          whitePieces |= (piecesList[j] & ALL_WHITE);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  // Same thing as white pieces but with black pieces.
+  U64 blackSpots = getPlayerEmptySpace(node->board, PlayerKind_Black);
+  counter = 0;
+  checker = blackSpots;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_Black);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          blackPieces |= (piecesList[j] & ALL_BLACK);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  return !(whitePieces && blackPieces);
 }
 
 
-/*
-TODO: Create function that goes through all squares.
-If getPlayerEmptySpace & currentSpace -> getMovablePieces
+void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool, int depth) {
+  // printf("Agent move: ");
 
-for each direction  -> create new board with applied moves
-                    -> eval the board
-                    -> create state node and connect as child to current node
-*/
+  U64 allPlayerBoard = (agentPlayer == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
+  
+  char playerStartingMoves[2][3];
+  if (agentPlayer == PlayerKind_White) {
+    strcpy(playerStartingMoves[0], "D4");
+    strcpy(playerStartingMoves[1], "E5");
+  } else {
+    strcpy(playerStartingMoves[0], "D5");
+    strcpy(playerStartingMoves[1], "E4");
+  }
+  char randomStart[3];
+  strcpy(randomStart, playerStartingMoves[rand() % 2]);
+
+  // First move
+  if (!((board->whole & allPlayerBoard) ^ allPlayerBoard)) {
+    printf("%s\n", randomStart);
+    board->whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
+    return;
+  }
+
+  // Determine best move: Generate children of possible moves
+  StateNode* stateNode = StateNodePoolAlloc(pool);
+  stateNode->board = *board;
+  StateNodeGenerateChildren(pool, stateNode, agentPlayer);
+
+  // Go through all children and set their score as minimax()
+  for (StateNode* child = stateNode->firstChild; child; child=child->next) {
+    child->score = minimax(pool, child, depth, INT_MIN, INT_MAX, (agentPlayer == PlayerKind_White) ?
+      1 : 0);
+  }
+
+  // Go through all children and print their score
+  I32 bestScore = (agentPlayer == PlayerKind_White) ? INT_MAX : INT_MIN;
+  StateNode* newState = stateNode->firstChild;
+  for (StateNode* child = stateNode->firstChild; child; child=child->next) {
+    if (agentPlayer == PlayerKind_White && child->score > newState->score) newState = child;
+    else if (agentPlayer == PlayerKind_Black && child->score < newState->score) newState = child;
+    // printf("State score: %d\n", child->score);
+  }
+
+  printf("%s\n", newState->move);
+  *board = newState->board;
+}
+
+
+// score < 0: black favoured (black has more pieces to move)
+// score > 0: white favoured (white has more pieces to move)
+// score = 0: equal pieces move
+void StateNodeCalcCost(StateNode* node) {
+  // These hold the pieces that are able to move
+  U64 whitePieces = 0, blackPieces = 0;
+  
+  // Get white pieces empty spots
+  U64 whiteSpots = getPlayerEmptySpace(node->board, PlayerKind_White);
+
+  // This algo is really weird.
+  // In short, the algo will go through each square.
+  // If the square is empty, call getMovablePieces() to get all the pieces that can
+  // move into this square.
+  // & each direction with ALL_WHITE to get the piece that can move to the empty square
+  // | each piece with whitePieces
+  // Now we have all the whitePieces that can move
+  U8 counter = 0;
+  U64 checker = whiteSpots, jumpSpace;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_White);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          whitePieces |= (piecesList[j] & ALL_WHITE);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  // Same thing as white pieces but with black pieces.
+  U64 blackSpots = getPlayerEmptySpace(node->board, PlayerKind_Black);
+  counter = 0;
+  checker = blackSpots;
+  while (checker) {
+    jumpSpace = checker & 1;
+    if (jumpSpace) {
+      U64* piecesList = getMovablePieces(jumpSpace << counter, node->board, PlayerKind_Black);
+      for (int j = 0; j < 4; j++) {
+        // If a spot is empty, get if this is reachable by a piece. +1 to score for each
+        // piece reachable
+        if (piecesList[j]) {
+          blackPieces |= (piecesList[j] & ALL_BLACK);
+        }
+      }
+    }
+    checker >>= 1;
+    counter++;
+  }
+
+  // printBoardToConsole(&node->board);
+  // printf("# of white pieces movable: %d\n", __builtin_popcountll(whitePieces));
+  // printf("# of black pieces movable: %d\n", __builtin_popcountll(blackPieces));
+  // printf("This state's score: %d\n", __builtin_popcountll(whitePieces) - __builtin_popcountll(blackPieces));
+
+  node->score = __builtin_popcountll(whitePieces)-__builtin_popcountll(blackPieces);
+}
+
+
 StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, char playerKind) {
   // 0b01 if black pieces, 0b10 if white pieces
+
   U64 currentSpace = (playerKind == PlayerKind_White) ? 0x2 : 0x1;
   U64 playerEmpty = getPlayerEmptySpace(parent->board, playerKind);
-  // printf("Creating nodes for %d\n", playerKind);
-  // printf("Starting space is %llu\n", currentSpace);
-  // printf("playerEmpty is: %llu\n", playerEmpty);
-  // Go through all squares
+  U64 allPlayer = (playerKind == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
 
   U8 counter = 0;
   U64 checker = playerEmpty, jumpSpace;
@@ -47,8 +193,21 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
           board.whole = (parent->board.whole)^(piecesList[j]|(jumpSpace << counter));
           StateNode* child = StateNodePoolAlloc(pool);
           child->board = board;
+
+          // Change this to minimax
+          // StateNodeCalcCost(child);
+
+          char coord[3];
+          bitToTextCoord(piecesList[j] & allPlayer, coord);
+          strcat(child->move, coord);
+          strcat(child->move, "-");
+
+          bitToTextCoord(jumpSpace << counter, coord);
+          strcat(child->move, coord);
+
+          // printf("Child with move %s created\n", child->move);
+
           StateNodePushChild(parent, child);
-          // printf("Created Node\t%llu\n", piecesList[j]);
         }
       }
     }
@@ -59,24 +218,53 @@ StateNode* StateNodeGenerateChildren(StateNodePool *pool, StateNode *parent, cha
 
 }
 
-U64 getUpMove(BitBoard board, char player) {
-  U64 playerEmpty = getPlayerEmptySpace(board, player);
-  U64 allplayer = (player == PlayerKind_White) ? ALL_WHITE : ALL_BLACK;
-  U8 counter = 0;
-  U64 checker = playerEmpty, jumpSpace;
-  while (checker) {
-    jumpSpace = checker & 1;
-    if (jumpSpace) {
-      U64* piecesList = getMovablePieces(jumpSpace << counter, board, player);
-      if (piecesList[0]) {
-        return ((piecesList[0]|(jumpSpace << counter))&allplayer);
+
+// For the minimax functions
+I32 minimax(StateNodePool *pool, StateNode* node, I32 depth, I32 alpha, I32 beta, I32 maximizingPlayer) {
+  // printf("Depth remaining: %d\n", depth);
+  if (depth == 0 || isOver(node)) {
+    //Run Evaluation Function
+    StateNodeCalcCost(node);
+    return node->score;
+  }
+
+  if (maximizingPlayer) {
+    I32 maxEval = INT_MIN;
+
+    // Generate children as white
+    StateNodeGenerateChildren(pool, node, PlayerKind_White);
+    
+    for (StateNode* child = node->firstChild; child != NULL; child = child->next) {
+      I32 eval = minimax(pool, child, depth -1, alpha, beta, false);
+      maxEval = max(maxEval, eval);
+      alpha = max(alpha, eval);
+      if (beta <= alpha) {
+        break;
       }
     }
-    checker >>= 1;
-    counter++;
+    return maxEval;
   }
-  return 0;
+
+  else {
+    I32 minEval = INT_MAX;
+
+    // Generate children as black
+    StateNodeGenerateChildren(pool, node, PlayerKind_Black);
+
+    for (StateNode* child = node->firstChild; child != NULL; child = child->next) {
+      I32 eval = minimax(pool, child, depth -1, alpha, beta, true);
+      minEval = min(minEval, eval);
+      beta = min(beta, eval);
+      if (beta <= alpha) {
+        break;
+      }
+    }
+    return minEval;
+  }
+
 }
+
+
 
 /*
  * This function simply gets all the empty spots the given player can land on.
@@ -123,12 +311,12 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if ((checkRange+1)%2 && checkJump & ~oppBoard) dirs &= 0x7;
       else if (checkJump & oppBoard) piecesModified[0] ^= checkJump;
-      // This spot can be double jumped. Disable other direction until
-      // max spot has been found
-      else {
-        piecesModified[2] = 0;
-        dirs &= 0xD;
-      }
+      // // This spot can be double jumped. Disable other direction until
+      // // max spot has been found
+      // else {
+      //   piecesModified[2] = 0;
+      //   dirs &= 0xD;
+      // }
     } else dirs &= 0x7;
 
     // Check left direction
@@ -143,10 +331,10 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if (hShift%2 && checkJump & ~oppBoard) dirs &= 0xB;
       else if (checkJump & oppBoard) piecesModified[1] ^= checkJump;
-      else {
-        piecesModified[3] = 0;
-        dirs &= 0xE;
-      }
+      // else {
+      //   piecesModified[3] = 0;
+      //   dirs &= 0xE;
+      // }
     } else dirs &= 0xB;
     
     // Check down direction
@@ -158,10 +346,10 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if ((checkRange+1)%2 && checkJump & ~oppBoard) dirs &= 0xD;
       else if (checkJump & oppBoard) piecesModified[2] ^= checkJump;
-      else {
-        piecesModified[0] = 0;
-        dirs &= 0x7;
-      }
+      // else {
+      //   piecesModified[0] = 0;
+      //   dirs &= 0x7;
+      // }
     } else dirs &= 0xD;
 
     // Check right direction
@@ -175,10 +363,10 @@ U64* getMovablePieces(U64 jump, BitBoard board, char player) {
       }
       else if (hShift%2 && (checkJump & ~oppBoard)) dirs &= 0xE;
       else if (checkJump & oppBoard) piecesModified[3] ^= checkJump;
-      else {
-        piecesModified[1] = 0;
-        dirs &= 0xB;
-      }
+      // else {
+      //   piecesModified[1] = 0;
+      //   dirs &= 0xB;
+      // }
     } else dirs &= 0xE;
   }
 

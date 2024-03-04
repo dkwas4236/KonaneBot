@@ -133,17 +133,17 @@ int main(int argc, char** argv) {
   U8 agentOpponent = (agentPlayer == PlayerKind_White) ? PlayerKind_Black : PlayerKind_White;
 
   srand(time(NULL));
-  char playerStartingMoves[2][3];
-  if (agentPlayer == PlayerKind_White) {
-    strcpy(playerStartingMoves[0], "D4");
-    strcpy(playerStartingMoves[1], "E5");
-  } else {
-    strcpy(playerStartingMoves[0], "D5");
-    strcpy(playerStartingMoves[1], "E4");
-  }
+  // char playerStartingMoves[2][3];
+  // if (agentPlayer == PlayerKind_White) {
+  //   strcpy(playerStartingMoves[0], "D4");
+  //   strcpy(playerStartingMoves[1], "E5");
+  // } else {
+  //   strcpy(playerStartingMoves[0], "D5");
+  //   strcpy(playerStartingMoves[1], "E4");
+  // }
 
-  char randomStart[3];
-  strcpy(randomStart, playerStartingMoves[rand() % 2]);
+  // char randomStart[3];
+  // strcpy(randomStart, playerStartingMoves[rand() % 2]);
   
   // // if playerBoard ^ board.allPlayer = 0, start of game. Pick random choice between
   // // center pieces
@@ -155,9 +155,7 @@ int main(int argc, char** argv) {
   // printf("E2-E4\n");
 
   // STRT TEST - John
-  // StateNodePool* stateNodePool = StateNodePoolInit(arena);
-  // StateNode* stateNode = StateNodePoolAlloc(stateNodePool);
-  // stateNode->board = board;
+  StateNodePool* stateNodePool = StateNodePoolInit(arena);
   // U64 playerCanGoTo = getPlayerEmptySpace(stateNode->board, player);
   // StateNodeGenerateChildren(stateNodePool, stateNode, player);
   // STOP TEST - John
@@ -204,37 +202,34 @@ int main(int argc, char** argv) {
   //          right shift 8 from starting point, |= 1 each time
   //      
   bool blackIsAgent = (agentPlayer == PlayerKind_White) ? false : true;
-  int turns = 2;
-  while (turns--) {
+  int turns = 1;
+  int depth = 6;
+  while (gaming) {
+    if (turns >= 8) depth = 5;
     if (blackIsAgent) {
-
-      // Agent starting move
-      printf("Agent move: ");
-      if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
-        printf("%s\n", randomStart);
-        board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
-      }
+      agentMove(agentPlayer, &board, stateNodePool, depth);
       // agent
-
       // input()
       mainInput(&board, agentOpponent);
     }
 
     else {
-      mainInput(&board, agentOpponent);
       // input()
-
+      // then
       // agent
-      // Agent starting move
-      printf("Agent move: ");
-      if (!((board.whole & allPlayerBoard) ^ allPlayerBoard)) {
-        printf("%s\n", randomStart);
-        board.whole ^= 1llu<<IndexFromCoord(CoordFromInput(randomStart));
-      }
+
+      // Somehow this fixes drivercheck
+      agentMove(agentPlayer, &board, stateNodePool, depth);
+      mainInput(&board, agentOpponent);
     }
 
+    // calculate score
+    // minimax(pool, child, 2, INT_MIN, INT_MAX, (playerKind == PlayerKind_White) ? true : false);
+
     // show board
-    printBoardToConsole(&board);
+    // printBoardToConsole(&board);
+    // StateNodePoolFree(stateNodePool, stateNode);
+    turns++;
   }
 
 

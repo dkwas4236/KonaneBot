@@ -17,6 +17,7 @@ typedef signed long long  I64;
 #define ROOT2 1.41421356237f // for monte carlo tree search
 
 #define MyAssert(expr) if (!expr) *((U32*)0) = 0xDEAD
+#define MOVE_LENGTH 6 // including '\0'
 
 
 typedef U8 PlayerKind;
@@ -56,6 +57,8 @@ struct StateNode {
   StateNode *firstChild;
   StateNode *lastChild;
   U64 childCount;
+  I32 score;
+  char move[MOVE_LENGTH];
 };
 
 
@@ -74,7 +77,6 @@ static inline Coord CoordFromIndex(U8 index) {
 static inline U8 IndexFromCoord(Coord coord) {
   return (coord.x-1) + 8*(coord.y-1);
 }
-
 
 
 #endif
