@@ -99,8 +99,8 @@ void agentMove(U8 agentPlayer, BitBoard* board, StateNodePool *pool) {
   I32 bestScore = (agentPlayer == PlayerKind_White) ? INT_MAX : INT_MIN;
   StateNode* newState = stateNode->firstChild;
   for (StateNode* child = stateNode->firstChild; child; child=child->next) {
-    if (agentPlayer == PlayerKind_White && child->score >= newState->score) newState = child;
-    else if (child->score <= newState->score) newState = child;
+    if (agentPlayer == PlayerKind_White && child->score > newState->score) newState = child;
+    else if (agentPlayer == PlayerKind_Black && child->score < newState->score) newState = child;
     // printf("State score: %d\n", child->score);
   }
 
