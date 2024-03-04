@@ -11,7 +11,7 @@
 
 #define ALL_BLACK 0xAA55AA55AA55AA55
 #define ALL_WHITE 0x55AA55AA55AA55AA
-#define DEPTH 6
+#define DEPTH 5
 
 bool shiftValid(U64 jump, U8 shift, bool max);
 
