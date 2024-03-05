@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
   while (gaming) {
     StateNodePool* stateNodePool = StateNodePoolInit(arena);
     if (turns >= 8) depth = 5;
-    if (playerKind) {
+    if (agentPlayer == PlayerKind_White) {
       agentMove(agentPlayer, &board, stateNodePool, depth);
       // agent
       // input()
