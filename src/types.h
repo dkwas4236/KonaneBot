@@ -46,6 +46,18 @@ union BitBoard {
   U64 whole;
 };
 
+typedef struct Coord Coord;
+struct Coord {
+  I8 x;
+  I8 y;
+};
+
+typedef struct Move Move;
+struct Move {
+  Coord a;
+  Coord b;
+  Bool isRemoval;
+};
 
 
 // 64 byte per node maybe we can cut down on size
@@ -63,11 +75,6 @@ struct StateNode {
 
 
 
-typedef struct Coord Coord;
-struct Coord {
-  I8 x;
-  I8 y;
-};
 
 
 static inline Coord CoordFromIndex(U8 index) {
