@@ -282,9 +282,9 @@ U64 getPlayerEmptySpace(BitBoard board, char player) {
  * 2 - down
  * 3 - right
  */
-U64* getMovablePieces(U64 jump, BitBoard board, char player) {
+U64[4] getMovablePieces(U64 jump, BitBoard board, char player) {
   // Not using arena since this is not a state
-  U64* piecesModified = malloc(4*sizeof(U64));
+  U64[4] piecesModified = malloc(4*sizeof(U64));
 
   // Initialize values
   piecesModified[0] &= 0;

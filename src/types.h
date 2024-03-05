@@ -65,12 +65,10 @@ typedef struct StateNode StateNode;
 struct StateNode {
   BitBoard   board;
   StateNode *next;
-  StateNode *prev;
   StateNode *firstChild;
-  StateNode *lastChild;
   U64 childCount;
   I32 score;
-  char move[MOVE_LENGTH];
+  char move[MOVE_LENGTH]; 
 };
 
 

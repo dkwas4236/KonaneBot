@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     if (*argv[2] == 'W') {
       agentPlayer = PlayerKind_White;
     } else if (*argv[2] == 'B') {
-      agentPlayer = PlayerKind_Black
+      agentPlayer = PlayerKind_Black;
     } else {
       fprintf(stderr, "Man, You gotta input black or white");
       return -1;
