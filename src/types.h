@@ -66,7 +66,7 @@ struct StateNode {
   BitBoard   board;
   StateNode *next;
   StateNode *firstChild;
-  U64 childCount;
+  StateNode *lastChild;
   I32 score;
   char move[MOVE_LENGTH]; 
 };
